@@ -1,0 +1,51 @@
+.gripscroll-container {
+  position: relative;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+.gripscroll-gutter {
+  position: absolute;
+  &.x {
+    bottom: 5px;
+    left: 5px;
+    right: 18px;
+    height: 10px;
+  }
+  &.y {
+    top: 5px;
+    right: 5px;
+    bottom: 18px;
+    width: 10px;
+  }
+}
+.gripscroll-bar {
+  position: absolute;
+  border: 1px solid rgba(108,108,108,0.25);
+  border-radius: 5px;
+  background-color: rgba(96,96,96,0.64);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 8px;
+  min-width:  8px;
+}
+.gripscroll-grip {
+  position: absolute;
+  width:  12px;
+  height: 12px;
+  &.a {
+    top:    -1px - 1px; // Extra pixel offset for the borders
+    left:   -1px - 1px; // Extra pixel offset for the borders
+  }
+  &.b {
+    bottom: -1px - 1px; // Extra pixel offset for the borders
+    right:  -1px - 1px; // Extra pixel offset for the borders
+  }
+  &.x {
+    cursor: col-resize;
+  }
+  &.y {
+    cursor: row-resize;
+  }
+}
