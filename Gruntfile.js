@@ -2,7 +2,9 @@ module.exports = function(grunt) {
 
   // Configuration
   grunt.initConfig({
+
     pkg: grunt.file.readJSON('package.json'),
+
     less: {
       dev: {
         files: {
@@ -10,6 +12,7 @@ module.exports = function(grunt) {
         }
       }
     },
+
     uglify: {
       dev: {
         files: {
@@ -20,6 +23,7 @@ module.exports = function(grunt) {
         }
       }
     },
+
     watch: {
       less: {
         files: "less/*.less",
@@ -30,6 +34,7 @@ module.exports = function(grunt) {
         tasks: "uglify"
       }
     }
+
   });
 
   // Tasks
