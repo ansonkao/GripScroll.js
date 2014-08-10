@@ -76,12 +76,11 @@ function GripScroll( targetId, options ){
 
       // Add Event handlers
       // Loop through both x and y axes
-      [ { x: 'x', y: 'y', clientSize: 'clientWidth' , side: { a: 'left', b: 'right'  }, clientXY: { a: 'clientX', b: 'clientY' }, clientSide: { a: 'clientLeft', b: 'clientRight'  } }
-      , { x: 'y', y: 'x', clientSize: 'clientHeight', side: { a: 'top' , b: 'bottom' }, clientXY: { a: 'clientY', b: 'clientX' }, clientSide: { a: 'clientTop' , b: 'clientBottom' } }
+      [ { x: 'x', y: 'y', side: { a: 'left', b: 'right'  } }
+      , { x: 'y', y: 'x', side: { a: 'top' , b: 'bottom' } }
       ].forEach(function(xyParams){
-        var x          = xyParams.x;
-        var y          = xyParams.y;
-        var clientSize = xyParams.clientSize;
+        var x = xyParams.x;
+        var y = xyParams.y;
 
         // Loop through both forwards and backwards directions on each axis
         [ { ab: 'a', sign: +1 }
@@ -92,7 +91,6 @@ function GripScroll( targetId, options ){
           var sign = abParams.sign;
 
           grip[x][ab].addEventListener('dragstart', function(e){
-            e.dataTransfer.effectAllowed = 'move';
             oldValue = bar[x].style[side];
             dragXStart = e.clientXYDirectional(x, sign) - bar[x].offsetDirectional(x, sign);
             dragYStart = e.clientXYDirectional(y, sign);
@@ -105,7 +103,7 @@ function GripScroll( targetId, options ){
               // Grip has been dragged closely (within 100px) - adjust the scrollbar
               if( Math.abs( e.clientXYDirectional(y, sign) - dragYStart ) < 100 )
               {
-                var newPosition = ( e.clientXYDirectional(x, sign) - dragXStart ) / gutter[x][clientSize];
+                var newPosition = ( e.clientXYDirectional(x, sign) - dragXStart ) / gutter[x].clientLength(x);
                 if( newPosition < 0 )
                   newPosition = 0;
                 if( newPosition > 1 )

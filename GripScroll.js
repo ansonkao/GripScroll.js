@@ -38,53 +38,35 @@ function GripScroll(a) {
             [ {
                 x: "x",
                 y: "y",
-                clientSize: "clientWidth",
                 side: {
                     a: "left",
                     b: "right"
-                },
-                clientXY: {
-                    a: "clientX",
-                    b: "clientY"
-                },
-                clientSide: {
-                    a: "clientLeft",
-                    b: "clientRight"
                 }
             }, {
                 x: "y",
                 y: "x",
-                clientSize: "clientHeight",
                 side: {
                     a: "top",
                     b: "bottom"
-                },
-                clientXY: {
-                    a: "clientY",
-                    b: "clientX"
-                },
-                clientSide: {
-                    a: "clientTop",
-                    b: "clientBottom"
                 }
             } ].forEach(function(g) {
-                var h = g.x, i = g.y, j = g.clientSize;
+                var h = g.x, i = g.y;
                 [ {
                     ab: "a",
                     sign: 1
                 }, {
                     ab: "b",
                     sign: -1
-                } ].forEach(function(k) {
-                    var l = k.ab, m = g.side[l], n = k.sign;
-                    e[h][l].addEventListener("dragstart", function(c) {
-                        return c.dataTransfer.effectAllowed = "move", f = d[h].style[m], a = c.clientXYDirectional(h, n) - d[h].offsetDirectional(h, n), 
-                        b = c.clientXYDirectional(i, n), !1;
-                    }), e[h][l].addEventListener("drag", function(e) {
-                        if (e.clientXYDirectional(h, n) > 0 && e.clientXYDirectional(i, n) > 0) if (Math.abs(e.clientXYDirectional(i, n) - b) < 100) {
-                            var g = (e.clientXYDirectional(h, n) - a) / c[h][j];
-                            0 > g && (g = 0), g > 1 && (g = 1), d[h].style[m] = 100 * g + "%";
-                        } else d[h].style[m] = f;
+                } ].forEach(function(j) {
+                    var k = j.ab, l = g.side[k], m = j.sign;
+                    e[h][k].addEventListener("dragstart", function(c) {
+                        return f = d[h].style[l], a = c.clientXYDirectional(h, m) - d[h].offsetDirectional(h, m), 
+                        b = c.clientXYDirectional(i, m), !1;
+                    }), e[h][k].addEventListener("drag", function(e) {
+                        if (e.clientXYDirectional(h, m) > 0 && e.clientXYDirectional(i, m) > 0) if (Math.abs(e.clientXYDirectional(i, m) - b) < 100) {
+                            var g = (e.clientXYDirectional(h, m) - a) / c[h].clientLength(h);
+                            0 > g && (g = 0), g > 1 && (g = 1), d[h].style[l] = 100 * g + "%";
+                        } else d[h].style[l] = f;
                         return !1;
                     }), c[h].addEventListener("dragend", function() {
                         return console.log("dragend"), !1;
@@ -138,5 +120,14 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
           case !1:
             return this.parentElement.offsetHeight - this.offsetHeight - this.offsetTop;
         }
+    }
+}, Element.prototype.clientLength = function(a) {
+    switch (a) {
+      default:
+      case "x":
+        return this.clientWidth;
+
+      case "y":
+        return this.clientHeight;
     }
 };

@@ -43,3 +43,14 @@ Element.prototype.offsetDirectional = function( axis, sign )
       }
   }
 }
+
+// Same as element.clientWidth or element.clientHeight but with axes specifiable (width, height)
+Element.prototype.clientLength = function( axis )
+{
+  switch( axis )
+  {
+    default:
+    case 'x': return this.clientWidth;
+    case 'y': return this.clientHeight;
+  }
+}
