@@ -78,7 +78,35 @@ function GripScroll(a) {
     this.initDOM(), this.initDragAndDrop();
 }
 
-MouseEvent.prototype.clientXYDirectional = function(a, b) {
+DragonDrop = {
+    currentTarget: null,
+    targetCounter: 0,
+    dataBuffers: [],
+    dragHandlers: [],
+    dropHandlers: [],
+    addHandler: function(a, b, c, d) {
+        var e = function(a) {
+            return function(c) {
+                1 == c.which && (console.log("Drag started!"), DragonDrop.currentTarget = a, DragonDrop.dataBuffers[a] = b(c));
+            };
+        }(this.targetCounter);
+        a.addEventListener("mousedown", e), this.dragHandlers[this.targetCounter] = c, this.dropHandlers[this.targetCounter] = d, 
+        this.targetCounter++;
+    },
+    init: function() {
+        function a(a) {
+            return function(b) {
+                null !== DragonDrop.currentTarget && b.which > a | 0 && (console.log("Drag ended!"), 
+                DragonDrop.dropHandlers[DragonDrop.currentTarget](b), DragonDrop.currentTarget = null);
+            };
+        }
+        document.onmousewheel = function(a) {
+            a.preventDefault();
+        }, document.addEventListener("mousemove", function(a) {
+            null !== DragonDrop.currentTarget && DragonDrop.dragHandlers[DragonDrop.currentTarget](a);
+        }), document.addEventListener("mouseup", a(!1)), document.addEventListener("mousedown", a(!0));
+    }
+}, DragonDrop.init(), MouseEvent.prototype.clientXYDirectional = function(a, b) {
     if (0 == this.clientX & 0 == this.clientY) return 0;
     switch (a) {
       default:
