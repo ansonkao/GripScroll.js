@@ -78,35 +78,38 @@ function GripScroll(a) {
     this.initDOM(), this.initDragAndDrop();
 }
 
-DragonDrop = {
-    currentTarget: null,
-    targetCounter: 0,
-    dataBuffers: [],
-    dragHandlers: [],
-    dropHandlers: [],
-    addHandler: function(a, b, c, d) {
-        var e = function(a) {
-            return function(c) {
-                1 == c.which && (console.log("Drag started!"), DragonDrop.currentTarget = a, DragonDrop.dataBuffers[a] = b(c));
-            };
-        }(this.targetCounter);
-        a.addEventListener("mousedown", e), this.dragHandlers[this.targetCounter] = c, this.dropHandlers[this.targetCounter] = d, 
-        this.targetCounter++;
-    },
-    init: function() {
-        function a(a) {
-            return function(b) {
-                null !== DragonDrop.currentTarget && b.which > a | 0 && (console.log("Drag ended!"), 
-                DragonDrop.dropHandlers[DragonDrop.currentTarget](b), DragonDrop.currentTarget = null);
-            };
-        }
-        document.onmousewheel = function(a) {
-            a.preventDefault();
-        }, document.addEventListener("mousemove", function(a) {
-            null !== DragonDrop.currentTarget && DragonDrop.dragHandlers[DragonDrop.currentTarget](a);
-        }), document.addEventListener("mouseup", a(!1)), document.addEventListener("mousedown", a(!0));
+var DragonDrop = function() {
+    function a(a) {
+        return function(c) {
+            i() && c.which > a | 0 && (c.startX = f, c.startY = g, e[b](c), b = null, f = null, 
+            g = null);
+        };
     }
-}, DragonDrop.init(), MouseEvent.prototype.clientXYDirectional = function(a, b) {
+    var b = null, c = 0, d = [], e = [], f = null, g = null, h = function() {
+        return b;
+    }, i = function() {
+        return null !== b;
+    }, j = function(a, f, g) {
+        var h = function(a) {
+            return function(c) {
+                1 == c.which && (b = a);
+            };
+        }(c);
+        a.addEventListener("mousedown", h), d[c] = f, e[c] = g, c++;
+    };
+    return document.onmousewheel = function(a) {
+        a.preventDefault();
+    }, document.addEventListener("mousemove", function(a) {
+        i() && (a.startX = f, a.startY = g, d[b](a));
+    }), document.addEventListener("mouseup", a(!1)), document.addEventListener("mousedown", a(!0)), 
+    {
+        getCurrentTarget: h,
+        isDragging: i,
+        addHandler: j
+    };
+}();
+
+MouseEvent.prototype.clientXYDirectional = function(a, b) {
     if (0 == this.clientX & 0 == this.clientY) return 0;
     switch (a) {
       default:
