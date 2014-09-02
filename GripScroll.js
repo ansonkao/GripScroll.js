@@ -81,31 +81,31 @@ function GripScroll(a) {
 var DragonDrop = function() {
     function a(a) {
         return function(c) {
-            i() && c.which > a | 0 && (c.startX = f, c.startY = g, e[b](c), b = null, f = null, 
-            g = null);
+            j() && c.which > a | 0 && (c.startX = g, c.startY = h, f[b](c), b = null, g = null, 
+            h = null);
         };
     }
-    var b = null, c = 0, d = [], e = [], f = null, g = null, h = function() {
+    var b = null, c = 0, d = [], e = [], f = [], g = null, h = null, i = function() {
         return b;
-    }, i = function() {
+    }, j = function() {
         return null !== b;
-    }, j = function(a, f, g) {
-        var h = function(a) {
+    }, k = function(a, g, h, i) {
+        var j = function(a) {
             return function(c) {
-                1 == c.which && (b = a);
+                1 == c.which && (b = a, d[a](c));
             };
         }(c);
-        a.addEventListener("mousedown", h), d[c] = f, e[c] = g, c++;
+        a.addEventListener("mousedown", j), d[c] = g, e[c] = h, f[c] = i, c++;
     };
     return document.onmousewheel = function(a) {
         a.preventDefault();
     }, document.addEventListener("mousemove", function(a) {
-        i() && (a.startX = f, a.startY = g, d[b](a));
+        j() && (a.startX = g, a.startY = h, e[b](a));
     }), document.addEventListener("mouseup", a(!1)), document.addEventListener("mousedown", a(!0)), 
     {
-        getCurrentTarget: h,
-        isDragging: i,
-        addHandler: j
+        getCurrentTarget: i,
+        isDragging: j,
+        addHandler: k
     };
 }();
 

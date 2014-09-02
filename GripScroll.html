@@ -32,14 +32,21 @@ var demo = new GripScroll('target');
 // DragonDrop demo...
 var testThingy = document.getElementById('test-thingy');
 DragonDrop.addHandler( testThingy,
+  // gripHandler
+  function(e){
+    console.log( 'grip', e.clientX, e.clientY );
+    return true;
+  },
   // dragHandler
   function(e){
+    console.log( 'drag', e.clientX, e.clientY );
     testThingy.style.left = e.clientX - e.startX;
     testThingy.style.top  = e.clientY - e.startY;
     return true;
   },
   // dropHandler
   function(e){
+    console.log( 'drop', e.clientX, e.clientY );
     return true;
   });
 </script>
