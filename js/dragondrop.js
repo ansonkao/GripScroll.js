@@ -28,8 +28,9 @@ var DragonDrop = (function(){
         return function(e) {
           if( e.which == 1 ) // Left Click
           {
-            currentTarget = uid; // use targetCounter to generate a uid
+            currentTarget = uid;  // use targetCounter to generate a uid
             gripHandlers[uid](e);
+            e.preventDefault();   // prevent mousedown from turning into a native drag event (which would hinder our implementation of drag)
           }
         };
       }(targetCounter);  // Use function expression to avoid infamous closure loop problem

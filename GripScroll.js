@@ -1,3 +1,62 @@
+function GripScrollbar(a, b, c, d, e) {
+    if (this.gutter = a, this.bar = b, this.grip = {
+        min: c,
+        max: d
+    }, this.direction = e, this.perpendicular = {
+        x: "y",
+        y: "x"
+    }[e], this.model = {
+        min: 0,
+        max: 0
+    }, !GripScrollbar.prototype.initialized) {
+        var f = GripScrollbar.prototype;
+        f.initialized = !0, f.draw = function(a, b) {
+            switch (this.direction) {
+              case "x":
+                "min" == b && (this.bar.style.left = 100 * a + "%"), "max" == b && (this.bar.style.right = 100 * a + "%");
+                break;
+
+              case "y":
+                "min" == b && (this.bar.style.top = 100 * a + "%"), "max" == b && (this.bar.style.bottom = 100 * a + "%");
+                break;
+
+              default:
+                console.warn("GripScrollbar.draw(): invalid direction");
+            }
+        }, f.save = function(a, b) {
+            this.model[b] = a;
+        }, f.calculatePosition = function(a, b) {
+            switch (b) {
+              case "min":
+                var c = "min", d = "max", e = 1;
+                break;
+
+              case "max":
+                var c = "max", d = "min", e = -1;
+                break;
+
+              default:
+                console.warn("GripScrollbar.calculatePosition(): invalid minOrMax");
+            }
+            var f = this.gutter.clientXYDirectional(this.perpendicular, e), g = a.clientXYDirectional(this.perpendicular, e);
+            if (console.log(f, g, this.direction, this.perpendicular, e), Math.abs(g - f) > 150) return this.model[c];
+            var h = this.gutter.clientXYDirectional(this.direction, e), i = a.clientXYDirectional(this.direction, e), j = this.gutter.clientLength(this.direction), k = (i - h) / j;
+            return console.log("newPosition:", k, i, h, j), 0 > k && (k = 0), k > 1 && (k = 1), 
+            k + this.model[d] > 1 && (k = 1 - this.model[d]), k;
+        };
+    }
+    var g = this;
+    [ "min", "max" ].forEach(function(a) {
+        DragonDrop.addHandler(g.grip[a], function() {}, function(b) {
+            var c = g.calculatePosition(b, a);
+            console.log("drag", c), g.draw(c, a);
+        }, function(b) {
+            var c = g.calculatePosition(b, a);
+            console.log("drop", c), g.draw(c, a), g.save(c, a);
+        });
+    });
+}
+
 function GripScroll(a) {
     var b = document.getElementById(a), c = {
         x: b.appendChild(document.createElement("div")),
@@ -29,50 +88,12 @@ function GripScroll(a) {
             b.className = "gripscroll-container", c.x.className = "gripscroll-gutter x", c.y.className = "gripscroll-gutter y", 
             d.x.className = "gripscroll-bar x", d.y.className = "gripscroll-bar y", e.x.a.className = "gripscroll-grip x a", 
             e.x.b.className = "gripscroll-grip x b", e.y.a.className = "gripscroll-grip y a", 
-            e.y.b.className = "gripscroll-grip y b", d.x.setAttribute("draggable", "true"), 
-            d.y.setAttribute("draggable", "true"), e.x.a.setAttribute("draggable", "true"), 
-            e.x.b.setAttribute("draggable", "true"), e.y.a.setAttribute("draggable", "true"), 
-            e.y.b.setAttribute("draggable", "true");
+            e.y.b.className = "gripscroll-grip y b", d.x.setAttribute("draggable", "false"), 
+            d.y.setAttribute("draggable", "false"), e.x.a.setAttribute("draggable", "false"), 
+            e.x.b.setAttribute("draggable", "false"), e.y.a.setAttribute("draggable", "false"), 
+            e.y.b.setAttribute("draggable", "false");
         }, f.initDragAndDrop = function() {
-            var a, b, f;
-            [ {
-                x: "x",
-                y: "y",
-                side: {
-                    a: "left",
-                    b: "right"
-                }
-            }, {
-                x: "y",
-                y: "x",
-                side: {
-                    a: "top",
-                    b: "bottom"
-                }
-            } ].forEach(function(g) {
-                var h = g.x, i = g.y;
-                [ {
-                    ab: "a",
-                    sign: 1
-                }, {
-                    ab: "b",
-                    sign: -1
-                } ].forEach(function(j) {
-                    var k = j.ab, l = g.side[k], m = j.sign;
-                    e[h][k].addEventListener("dragstart", function(c) {
-                        return f = d[h].style[l], a = c.clientXYDirectional(h, m) - d[h].offsetDirectional(h, m), 
-                        b = c.clientXYDirectional(i, m), !1;
-                    }), e[h][k].addEventListener("drag", function(e) {
-                        if (e.clientXYDirectional(h, m) > 0 && e.clientXYDirectional(i, m) > 0) if (Math.abs(e.clientXYDirectional(i, m) - b) < 100) {
-                            var g = (e.clientXYDirectional(h, m) - a) / c[h].clientLength(h);
-                            0 > g && (g = 0), g > 1 && (g = 1), d[h].style[l] = 100 * g + "%";
-                        } else d[h].style[l] = f;
-                        return !1;
-                    }), c[h].addEventListener("dragend", function() {
-                        return console.log("dragend"), !1;
-                    });
-                });
-            });
+            new GripScrollbar(c.y, d.y, e.y.a, e.y.b, "y"), new GripScrollbar(c.x, d.x, e.x.a, e.x.b, "x");
         };
     }
     this.initDOM(), this.initDragAndDrop();
@@ -92,7 +113,7 @@ var DragonDrop = function() {
     }, k = function(a, g, h, i) {
         var j = function(a) {
             return function(c) {
-                1 == c.which && (b = a, d[a](c));
+                1 == c.which && (b = a, d[a](c), c.preventDefault());
             };
         }(c);
         a.addEventListener("mousedown", j), d[c] = g, e[c] = h, f[c] = i, c++;
@@ -110,9 +131,7 @@ var DragonDrop = function() {
 }();
 
 MouseEvent.prototype.clientXYDirectional = function(a, b) {
-    if (0 == this.clientX & 0 == this.clientY) return 0;
     switch (a) {
-      default:
       case "x":
         switch (b > 0) {
           case !0:
@@ -130,10 +149,12 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
           case !1:
             return window.innerHeight - this.clientY;
         }
+
+      default:
+        return null;
     }
 }, Element.prototype.offsetDirectional = function(a, b) {
     switch (a) {
-      default:
       case "x":
         switch (b > 0) {
           case !0:
@@ -151,14 +172,42 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
           case !1:
             return this.parentElement.offsetHeight - this.offsetHeight - this.offsetTop;
         }
+
+      default:
+        return null;
+    }
+}, Element.prototype.clientXYDirectional = function(a, b) {
+    var c = this.getBoundingClientRect();
+    switch (a) {
+      case "x":
+        switch (b > 0) {
+          case !0:
+            return c.left;
+
+          case !1:
+            return window.innerWidth - c.left - c.width;
+        }
+
+      case "y":
+        switch (b > 0) {
+          case !0:
+            return c.top;
+
+          case !1:
+            return window.innerHeight - c.top - c.height;
+        }
+
+      default:
+        return null;
     }
 }, Element.prototype.clientLength = function(a) {
+    var b = this.getBoundingClientRect();
     switch (a) {
       default:
       case "x":
-        return this.clientWidth;
+        return b.width;
 
       case "y":
-        return this.clientHeight;
+        return b.height;
     }
 };

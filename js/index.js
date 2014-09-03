@@ -1,3 +1,129 @@
+function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
+{
+  // ==========================================================================
+  // Private Members
+  // ==========================================================================
+  // DOM element references
+  this.gutter  = gutter;
+  this.bar     = bar;
+  this.grip    = { min: minGrip
+                 , max: maxGrip
+                 };
+
+  // Model
+  this.direction     = direction;
+  this.perpendicular = ({x:'y', y:'x'})[direction];
+  this.model         = { min: 0
+                     , max: 0
+                     };
+
+  // Prototype
+  if( ! GripScrollbar.prototype.initialized )
+  {
+    var $ = GripScrollbar.prototype;
+    $.initialized = true;
+
+    // ========================================================================
+    // Public Members
+    // ========================================================================
+    // Render to the screen with new values (not necessarily persistent ones)
+    $.draw = function( newValue, minOrMax )
+    {
+      switch( this.direction )
+      {
+        case 'x':
+          if( minOrMax == 'min' ) this.bar.style.left   = newValue*100 + '%';
+          if( minOrMax == 'max' ) this.bar.style.right  = newValue*100 + '%';
+          break;
+        case 'y':
+          if( minOrMax == 'min' ) this.bar.style.top    = newValue*100 + '%';
+          if( minOrMax == 'max' ) this.bar.style.bottom = newValue*100 + '%';
+          break;
+        default:
+          console.warn( 'GripScrollbar.draw(): invalid direction' );
+      }
+    };
+
+    // Persist the values to the local model
+    $.save = function( newValue, minOrMax )
+    {
+      this.model[minOrMax] = newValue;
+    }
+
+    /* Calculates a new position based on a mouse event
+     * @e         A mouse event, probably from a drag handler
+     * @minOrMax  'min' or 'max' (indicates which of these 2 positions are being adjusted)
+     */
+    $.calculatePosition = function( e, minOrMax )
+    {
+      // Initialize Context
+      switch( minOrMax )
+      {
+        case 'min':
+          var thisSide = 'min';
+          var thatSide = 'max';
+          var sign = +1;
+          break;
+        case 'max':
+          var thisSide = 'max';
+          var thatSide = 'min';
+          var sign = -1;
+          break;
+        default:
+          console.warn( 'GripScrollbar.calculatePosition(): invalid minOrMax' );
+      }
+
+      // Escape to existing value if cursor drawn too far out
+      var perpendicularOffset = this.gutter.clientXYDirectional( this.perpendicular, sign );
+      var perpendicularMousePixels = e.clientXYDirectional( this.perpendicular, sign );
+      console.log( perpendicularOffset, perpendicularMousePixels, this.direction, this.perpendicular, sign );
+      if( Math.abs( perpendicularMousePixels - perpendicularOffset ) > 150 )
+        return this.model[thisSide];
+
+      // Calculate new value
+      var offset = this.gutter.clientXYDirectional( this.direction, sign );
+      var mousePixels = e.clientXYDirectional( this.direction, sign );
+      var mouseRange = this.gutter.clientLength( this.direction );
+      var newPosition = ( mousePixels - offset ) / mouseRange;
+      console.log( 'newPosition:', newPosition, mousePixels, offset, mouseRange );
+
+      // Validate
+      if( newPosition < 0 ) newPosition = 0;
+      if( newPosition > 1 ) newPosition = 1;
+      if( newPosition + this.model[thatSide] > 1 ) // range created by min and max can't zoom to less than 0
+        newPosition = 1 - this.model[thatSide];
+      return newPosition;
+    }
+  }
+
+  // ==========================================================================
+  // Initialization of each Instance
+  // ==========================================================================
+  var that = this;
+  ['min', 'max'].forEach(function(minOrMax){   // Add Drag and Drop handlers for each grip
+    DragonDrop.addHandler(
+      // targetElement
+      that.grip[minOrMax],
+      // gripHandler
+      function(e){},
+      // dragHandler
+      function(e){
+        var newPosition = that.calculatePosition(e, minOrMax);
+        console.log( 'drag', newPosition );
+        that.draw( newPosition, minOrMax );
+      },
+      // dropHandler
+      function(e){
+        var newPosition = that.calculatePosition(e, minOrMax);
+        console.log( 'drop', newPosition );
+        that.draw( newPosition, minOrMax );
+        that.save( newPosition, minOrMax );
+      }
+    );
+  });
+}
+
+
 function GripScroll( targetId, options ){
 
   // ==========================================================================
@@ -59,70 +185,18 @@ function GripScroll( targetId, options ){
       grip.y.b.className  = 'gripscroll-grip y b';
 
       // Add dragabble
-      bar.x.setAttribute('draggable', 'true');
-      bar.y.setAttribute('draggable', 'true');
-      grip.x.a.setAttribute('draggable', 'true');
-      grip.x.b.setAttribute('draggable', 'true');
-      grip.y.a.setAttribute('draggable', 'true');
-      grip.y.b.setAttribute('draggable', 'true');
+      bar.x.setAttribute('draggable', 'false');
+      bar.y.setAttribute('draggable', 'false');
+      grip.x.a.setAttribute('draggable', 'false');
+      grip.x.b.setAttribute('draggable', 'false');
+      grip.y.a.setAttribute('draggable', 'false');
+      grip.y.b.setAttribute('draggable', 'false');
     };
 
     $.initDragAndDrop = function()
     {
-      // Buffers
-      var dragXStart;
-      var dragYStart;
-      var oldValue;
-
-      // Add Event handlers
-      // Loop through both x and y axes
-      [ { x: 'x', y: 'y', side: { a: 'left', b: 'right'  } }
-      , { x: 'y', y: 'x', side: { a: 'top' , b: 'bottom' } }
-      ].forEach(function(xyParams){
-        var x = xyParams.x;
-        var y = xyParams.y;
-
-        // Loop through both forwards and backwards directions on each axis
-        [ { ab: 'a', sign: +1 }
-        , { ab: 'b', sign: -1 }
-        ].forEach(function(abParams){
-          var ab   = abParams.ab;
-          var side = xyParams.side[ab];
-          var sign = abParams.sign;
-
-          grip[x][ab].addEventListener('dragstart', function(e){
-            oldValue = bar[x].style[side];
-            dragXStart = e.clientXYDirectional(x, sign) - bar[x].offsetDirectional(x, sign);
-            dragYStart = e.clientXYDirectional(y, sign);
-            return false;
-          });
-          grip[x][ab].addEventListener('drag', function(e){
-            // Only take action on non-zero values, (0,0) issometimes  presented when the drag ends and can cause spurious jumps
-            if( e.clientXYDirectional(x, sign) > 0 && e.clientXYDirectional(y, sign) > 0 )
-            {
-              // Grip has been dragged closely (within 100px) - adjust the scrollbar
-              if( Math.abs( e.clientXYDirectional(y, sign) - dragYStart ) < 100 )
-              {
-                var newPosition = ( e.clientXYDirectional(x, sign) - dragXStart ) / gutter[x].clientLength(x);
-                if( newPosition < 0 )
-                  newPosition = 0;
-                if( newPosition > 1 )
-                  newPosition = 1;
-                bar[x].style[side] = newPosition * 100 + '%';
-              }
-              // Grip is being dragged but far out, so snap back to original value
-              else 
-                bar[x].style[side] = oldValue;
-            }
-            return false;
-          });
-          gutter[x].addEventListener('dragend', function(e){
-            console.log( 'dragend' );
-            return false;
-          });
-        });
-      });
-
+      var yScroll = new GripScrollbar( gutter.y, bar.y, grip.y.a, grip.y.b, 'y' );
+      var xScroll = new GripScrollbar( gutter.x, bar.x, grip.x.a, grip.x.b, 'x' );
     };
   }
 
