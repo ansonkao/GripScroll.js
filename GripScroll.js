@@ -39,20 +39,20 @@ function GripScrollbar(a, b, c, d, e) {
                 console.warn("GripScrollbar.calculatePosition(): invalid minOrMax");
             }
             var f = this.gutter.clientXYDirectional(this.perpendicular, e), g = a.clientXYDirectional(this.perpendicular, e);
-            if (console.log(f, g, this.direction, this.perpendicular, e), Math.abs(g - f) > 150) return this.model[c];
+            if (Math.abs(g - f) > 150) return this.model[c];
             var h = this.gutter.clientXYDirectional(this.direction, e), i = a.clientXYDirectional(this.direction, e), j = this.gutter.clientLength(this.direction), k = (i - h) / j;
-            return console.log("newPosition:", k, i, h, j), 0 > k && (k = 0), k > 1 && (k = 1), 
-            k + this.model[d] > 1 && (k = 1 - this.model[d]), k;
+            return 0 > k && (k = 0), k > 1 && (k = 1), k + this.model[d] > 1 && (k = 1 - this.model[d]), 
+            k;
         };
     }
     var g = this;
     [ "min", "max" ].forEach(function(a) {
         DragonDrop.addHandler(g.grip[a], function() {}, function(b) {
             var c = g.calculatePosition(b, a);
-            console.log("drag", c), g.draw(c, a);
+            g.draw(c, a);
         }, function(b) {
             var c = g.calculatePosition(b, a);
-            console.log("drop", c), g.draw(c, a), g.save(c, a);
+            g.draw(c, a), g.save(c, a);
         });
     });
 }

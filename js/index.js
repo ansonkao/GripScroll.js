@@ -76,7 +76,6 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
       // Escape to existing value if cursor drawn too far out
       var perpendicularOffset = this.gutter.clientXYDirectional( this.perpendicular, sign );
       var perpendicularMousePixels = e.clientXYDirectional( this.perpendicular, sign );
-      console.log( perpendicularOffset, perpendicularMousePixels, this.direction, this.perpendicular, sign );
       if( Math.abs( perpendicularMousePixels - perpendicularOffset ) > 150 )
         return this.model[thisSide];
 
@@ -85,7 +84,6 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
       var mousePixels = e.clientXYDirectional( this.direction, sign );
       var mouseRange = this.gutter.clientLength( this.direction );
       var newPosition = ( mousePixels - offset ) / mouseRange;
-      console.log( 'newPosition:', newPosition, mousePixels, offset, mouseRange );
 
       // Validate
       if( newPosition < 0 ) newPosition = 0;
@@ -109,13 +107,11 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
       // dragHandler
       function(e){
         var newPosition = that.calculatePosition(e, minOrMax);
-        console.log( 'drag', newPosition );
         that.draw( newPosition, minOrMax );
       },
       // dropHandler
       function(e){
         var newPosition = that.calculatePosition(e, minOrMax);
-        console.log( 'drop', newPosition );
         that.draw( newPosition, minOrMax );
         that.save( newPosition, minOrMax );
       }
