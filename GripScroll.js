@@ -1,139 +1,124 @@
-function GripScrollbar(a, b, c, d, e) {
-    if (this.gutter = a, this.bar = b, this.grip = {
-        min: c,
-        max: d
-    }, this.direction = e, this.perpendicular = {
+function GripScrollbar(container, direction) {
+    if (this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
+    this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
+    this.direction = direction, this.perpendicular = {
         x: "y",
         y: "x"
-    }[e], this.model = {
+    }[direction], this.smallestZoom = .125, this.model = {
         min: 0,
         max: 0
     }, !GripScrollbar.prototype.initialized) {
-        var f = GripScrollbar.prototype;
-        f.initialized = !0, f.draw = function(a, b) {
+        var $ = GripScrollbar.prototype;
+        $.initialized = !0, $.init = function() {
             switch (this.direction) {
               case "x":
-                "min" == b && (this.bar.style.left = 100 * a + "%"), "max" == b && (this.bar.style.right = 100 * a + "%");
+                this.canvas.width = this.width = this.container.clientWidth - 20, this.canvas.height = this.height = 10;
                 break;
 
               case "y":
-                "min" == b && (this.bar.style.top = 100 * a + "%"), "max" == b && (this.bar.style.bottom = 100 * a + "%");
+                this.canvas.width = this.width = 10, this.canvas.height = this.height = this.container.clientHeight - 20;
+            }
+            this.draw(this.model.min, this.model.max);
+        }, $.draw = function(newMin, newMax) {
+            switch (this.canvasContext.clear(), this.canvasContext.strokeStyle = "rgba(96,96,96,0.64)", 
+            this.canvasContext.fillStyle = "rgba(96,96,96,0.60)", this.direction) {
+              case "x":
+                this.canvasContext.roundRect(this.width * newMin + .5, .5, this.width * (1 - newMin - newMax) - 1, this.height - 1, 5, !0, !0);
                 break;
 
-              default:
-                console.warn("GripScrollbar.draw(): invalid direction");
+              case "y":
+                this.canvasContext.roundRect(.5, this.height * newMin + .5, this.width - 1, this.height * (1 - newMin - newMax) - 1, 5, !0, !0);
             }
-        }, f.save = function(a, b) {
-            this.model[b] = a;
-        }, f.calculatePosition = function(a, b) {
-            switch (b) {
+        }, $.save = function(newValue, minOrMax) {
+            this.model[minOrMax] = newValue;
+        }, $.calculatePosition = function(e, minOrMax) {
+            switch (minOrMax) {
               case "min":
-                var c = "min", d = "max", e = 1;
+                var thisSide = "min", thatSide = "max", sign = 1;
                 break;
 
               case "max":
-                var c = "max", d = "min", e = -1;
+                var thisSide = "max", thatSide = "min", sign = -1;
                 break;
 
               default:
                 console.warn("GripScrollbar.calculatePosition(): invalid minOrMax");
             }
-            var f = this.gutter.clientXYDirectional(this.perpendicular, e), g = a.clientXYDirectional(this.perpendicular, e);
-            if (Math.abs(g - f) > 150) return this.model[c];
-            var h = this.gutter.clientXYDirectional(this.direction, e), i = a.clientXYDirectional(this.direction, e), j = this.gutter.clientLength(this.direction), k = (i - h) / j;
-            return 0 > k && (k = 0), k > 1 && (k = 1), k + this.model[d] > 1 && (k = 1 - this.model[d]), 
-            k;
+            var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, sign), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, sign);
+            if (Math.abs(perpendicularMousePixels - perpendicularOffset) > 150) return this.model[thisSide];
+            var offset = this.canvas.clientXYDirectional(this.direction, sign), mousePixels = e.clientXYDirectional(this.direction, sign), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
+            return "min" == minOrMax && 0 > newPosition && (newPosition = 0), "min" == minOrMax && newPosition > 1 - this.model[thatSide] - this.smallestZoom && (newPosition = 1 - this.model[thatSide] - this.smallestZoom), 
+            "max" == minOrMax && newPosition < 0 + this.model[thatSide] + this.smallestZoom && (newPosition = 0 + this.model[thatSide] + this.smallestZoom), 
+            "max" == minOrMax && newPosition > 1 && (newPosition = 1), newPosition;
         };
     }
-    var g = this;
-    [ "min", "max" ].forEach(function(a) {
-        DragonDrop.addHandler(g.grip[a], function() {}, function(b) {
-            var c = g.calculatePosition(b, a);
-            g.draw(c, a);
-        }, function(b) {
-            var c = g.calculatePosition(b, a);
-            g.draw(c, a), g.save(c, a);
+    this.init();
+    var that = this;
+    return window.addEventListener("resize", function() {
+        that.init();
+    }), [ "min" ].forEach(function(minOrMax) {
+        DragonDrop.addHandler(that.canvas, function() {}, function(e) {
+            var newPosition = that.calculatePosition(e, minOrMax);
+            that.draw(newPosition, that.model.max);
+        }, function(e) {
+            var newPosition = that.calculatePosition(e, minOrMax);
+            that.draw(newPosition, that.model.max), that.save(newPosition, minOrMax);
         });
-    });
+    }), this.canvas;
 }
 
-function GripScroll(a) {
-    var b = document.getElementById(a), c = {
-        x: b.appendChild(document.createElement("div")),
-        y: b.appendChild(document.createElement("div"))
-    }, d = {
-        x: c.x.appendChild(document.createElement("div")),
-        y: c.y.appendChild(document.createElement("div"))
-    }, e = {
-        x: {
-            a: d.x.appendChild(document.createElement("div")),
-            b: d.x.appendChild(document.createElement("div"))
-        },
-        y: {
-            a: d.y.appendChild(document.createElement("div")),
-            b: d.y.appendChild(document.createElement("div"))
-        }
-    };
-    if (!GripScroll.prototype.initialized) {
-        var f = GripScroll.prototype;
-        f.initialized = !0, f.getContainer = function() {
-            return b;
-        }, f.getGutter = function(a) {
-            return c[a];
-        }, f.getBar = function(a) {
-            return d[a];
-        }, f.getGrip = function(a, b) {
-            return e[a][b];
-        }, f.initDOM = function() {
-            b.className = "gripscroll-container", c.x.className = "gripscroll-gutter x", c.y.className = "gripscroll-gutter y", 
-            d.x.className = "gripscroll-bar x", d.y.className = "gripscroll-bar y", e.x.a.className = "gripscroll-grip x a", 
-            e.x.b.className = "gripscroll-grip x b", e.y.a.className = "gripscroll-grip y a", 
-            e.y.b.className = "gripscroll-grip y b", d.x.setAttribute("draggable", "false"), 
-            d.y.setAttribute("draggable", "false"), e.x.a.setAttribute("draggable", "false"), 
-            e.x.b.setAttribute("draggable", "false"), e.y.a.setAttribute("draggable", "false"), 
-            e.y.b.setAttribute("draggable", "false");
-        }, f.initDragAndDrop = function() {
-            new GripScrollbar(c.y, d.y, e.y.a, e.y.b, "y"), new GripScrollbar(c.x, d.x, e.x.a, e.x.b, "x");
-        };
+function GripScroll(targetId) {
+    if (this.container = document.getElementById(targetId), this.container.className = "gripscroll", 
+    this.bar = {
+        x: new GripScrollbar(this.container, "x"),
+        y: new GripScrollbar(this.container, "y")
+    }, !GripScroll.prototype.initialized) {
+        var $ = GripScroll.prototype;
+        $.initialized = !0, $.getContainer = function() {
+            return this.container;
+        }, $.getBar = function(xy) {
+            return this.bar[xy];
+        }, $.init = function() {};
     }
-    this.initDOM(), this.initDragAndDrop();
 }
 
 var DragonDrop = function() {
-    function a(a) {
-        return function(c) {
-            j() && c.which > a | 0 && (c.startX = g, c.startY = h, f[b](c), b = null, g = null, 
-            h = null);
+    function rootDropHandler(ignoreLeftClick) {
+        return function(e) {
+            isDragging() && e.which > ignoreLeftClick | 0 && (e.startX = startX, e.startY = startY, 
+            dropHandlers[currentTarget](e), currentTarget = null, startX = null, startY = null);
         };
     }
-    var b = null, c = 0, d = [], e = [], f = [], g = null, h = null, i = function() {
-        return b;
-    }, j = function() {
-        return null !== b;
-    }, k = function(a, g, h, i) {
-        var j = function(a) {
-            return function(c) {
-                1 == c.which && (b = a, d[a](c), c.preventDefault());
+    var currentTarget = null, targetCounter = 0, gripHandlers = [], dragHandlers = [], dropHandlers = [], startX = null, startY = null, getCurrentTarget = function() {
+        return currentTarget;
+    }, isDragging = function() {
+        return null !== currentTarget;
+    }, addHandler = function(target, gripHandler, dragHandler, dropHandler) {
+        var mousedownHandler = function(uid) {
+            return function(e) {
+                1 == e.which && (currentTarget = uid, gripHandlers[uid](e), e.preventDefault());
             };
-        }(c);
-        a.addEventListener("mousedown", j), d[c] = g, e[c] = h, f[c] = i, c++;
+        }(targetCounter);
+        target.addEventListener("mousedown", mousedownHandler), gripHandlers[targetCounter] = gripHandler, 
+        dragHandlers[targetCounter] = dragHandler, dropHandlers[targetCounter] = dropHandler, 
+        targetCounter++;
     };
-    return document.onmousewheel = function(a) {
-        a.preventDefault();
-    }, document.addEventListener("mousemove", function(a) {
-        j() && (a.startX = g, a.startY = h, e[b](a));
-    }), document.addEventListener("mouseup", a(!1)), document.addEventListener("mousedown", a(!0)), 
+    return document.onmousewheel = function(e) {
+        e.preventDefault();
+    }, document.addEventListener("mousemove", function(e) {
+        isDragging() && (e.startX = startX, e.startY = startY, dragHandlers[currentTarget](e));
+    }), document.addEventListener("mouseup", rootDropHandler(!1)), document.addEventListener("mousedown", rootDropHandler(!0)), 
     {
-        getCurrentTarget: i,
-        isDragging: j,
-        addHandler: k
+        getCurrentTarget: getCurrentTarget,
+        isDragging: isDragging,
+        addHandler: addHandler
     };
 }();
 
-MouseEvent.prototype.clientXYDirectional = function(a, b) {
-    switch (a) {
+MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
+    switch (axis) {
       case "x":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
             return this.clientX;
 
@@ -142,7 +127,7 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
         }
 
       case "y":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
             return this.clientY;
 
@@ -153,10 +138,10 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
       default:
         return null;
     }
-}, Element.prototype.offsetDirectional = function(a, b) {
-    switch (a) {
+}, Element.prototype.offsetDirectional = function(axis, sign) {
+    switch (axis) {
       case "x":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
             return this.offsetLeft;
 
@@ -165,7 +150,7 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
         }
 
       case "y":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
             return this.offsetTop;
 
@@ -176,38 +161,48 @@ MouseEvent.prototype.clientXYDirectional = function(a, b) {
       default:
         return null;
     }
-}, Element.prototype.clientXYDirectional = function(a, b) {
-    var c = this.getBoundingClientRect();
-    switch (a) {
+}, Element.prototype.clientXYDirectional = function(axis, sign) {
+    var rect = this.getBoundingClientRect();
+    switch (axis) {
       case "x":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
-            return c.left;
+            return rect.left;
 
           case !1:
-            return window.innerWidth - c.left - c.width;
+            return window.innerWidth - rect.left - rect.width;
         }
 
       case "y":
-        switch (b > 0) {
+        switch (sign > 0) {
           case !0:
-            return c.top;
+            return rect.top;
 
           case !1:
-            return window.innerHeight - c.top - c.height;
+            return window.innerHeight - rect.top - rect.height;
         }
 
       default:
         return null;
     }
-}, Element.prototype.clientLength = function(a) {
-    var b = this.getBoundingClientRect();
-    switch (a) {
+}, Element.prototype.clientLength = function(axis) {
+    var rect = this.getBoundingClientRect();
+    switch (axis) {
       default:
       case "x":
-        return b.width;
+        return rect.width;
 
       case "y":
-        return b.height;
+        return rect.height;
     }
+}, CanvasRenderingContext2D.prototype.clear = CanvasRenderingContext2D.prototype.clear || function(preserveTransform) {
+    preserveTransform && (this.save(), this.setTransform(1, 0, 0, 1, 0, 0)), this.clearRect(0, 0, this.canvas.width, this.canvas.height), 
+    preserveTransform && this.restore();
+}, CanvasRenderingContext2D.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect || function(x, y, width, height, radius, fill, stroke) {
+    this.beginPath(), this.moveTo(x + radius, y), this.lineTo(x + width - radius, y), 
+    this.quadraticCurveTo(x + width, y, x + width, y + radius), this.lineTo(x + width, y + height - radius), 
+    this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height), this.lineTo(x + radius, y + height), 
+    this.quadraticCurveTo(x, y + height, x, y + height - radius), this.lineTo(x, y + radius), 
+    this.quadraticCurveTo(x, y, x + radius, y), this.closePath(), stroke && this.stroke(), 
+    fill && this.fill();
 };

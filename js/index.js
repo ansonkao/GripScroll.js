@@ -1,21 +1,21 @@
-function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
+function GripScrollbar(container, direction)
 {
   // ==========================================================================
   // Private Members
   // ==========================================================================
   // DOM element references
-  this.gutter  = gutter;
-  this.bar     = bar;
-  this.grip    = { min: minGrip
-                 , max: maxGrip
-                 };
-
+  this.container     = container;
+  this.canvas        = container.appendChild( document.createElement('canvas') );
+  this.canvasContext = this.canvas.getContext("2d");
+  this.canvas.className = 'bar '+direction;
+    
   // Model
   this.direction     = direction;
   this.perpendicular = ({x:'y', y:'x'})[direction];
+  this.smallestZoom  = 0.125;
   this.model         = { min: 0
-                     , max: 0
-                     };
+                       , max: 0
+                       };
 
   // Prototype
   if( ! GripScrollbar.prototype.initialized )
@@ -26,26 +26,42 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
     // ========================================================================
     // Public Members
     // ========================================================================
-    // Render to the screen with new values (not necessarily persistent ones)
-    $.draw = function( newValue, minOrMax )
+    // Initialize dimensions
+    $.init = function ()
     {
+      // Canvas Dimensions
       switch( this.direction )
       {
         case 'x':
-          if( minOrMax == 'min' ) this.bar.style.left   = newValue*100 + '%';
-          if( minOrMax == 'max' ) this.bar.style.right  = newValue*100 + '%';
+          this.canvas.width  = this.width  = this.container.clientWidth  - 20;
+          this.canvas.height = this.height = 10;
           break;
         case 'y':
-          if( minOrMax == 'min' ) this.bar.style.top    = newValue*100 + '%';
-          if( minOrMax == 'max' ) this.bar.style.bottom = newValue*100 + '%';
+          this.canvas.width  = this.width  = 10;
+          this.canvas.height = this.height = this.container.clientHeight - 20;
           break;
-        default:
-          console.warn( 'GripScrollbar.draw(): invalid direction' );
       }
+
+      // Do it!
+      this.draw( this.model.min, this.model.max );
+    }
+
+    // Render to the screen with new values (not necessarily persistent ones)
+    $.draw = function (newMin, newMax)
+    {
+      this.canvasContext.clear();
+      this.canvasContext.strokeStyle = 'rgba(96,96,96,0.64)';
+      this.canvasContext.fillStyle   = 'rgba(96,96,96,0.60)';
+      switch( this.direction )
+      {
+        case 'x': this.canvasContext.roundRect(this.width*newMin + 0.5,  0.5, this.width*(1-newMin-newMax) - 1, this.height - 1, 5, true, true); break;
+        case 'y': this.canvasContext.roundRect(0.5, this.height*newMin + 0.5, this.width - 1, this.height*(1-newMin-newMax) - 1, 5, true, true); break;
+      }
+
     };
 
     // Persist the values to the local model
-    $.save = function( newValue, minOrMax )
+    $.save = function (newValue, minOrMax)
     {
       this.model[minOrMax] = newValue;
     }
@@ -54,7 +70,7 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
      * @e         A mouse event, probably from a drag handler
      * @minOrMax  'min' or 'max' (indicates which of these 2 positions are being adjusted)
      */
-    $.calculatePosition = function( e, minOrMax )
+    $.calculatePosition = function (e, minOrMax)
     {
       // Initialize Context
       switch( minOrMax )
@@ -74,71 +90,76 @@ function GripScrollbar( gutter, bar, minGrip, maxGrip, direction )
       }
 
       // Escape to existing value if cursor drawn too far out
-      var perpendicularOffset = this.gutter.clientXYDirectional( this.perpendicular, sign );
+      var perpendicularOffset = this.canvas.clientXYDirectional( this.perpendicular, sign );
       var perpendicularMousePixels = e.clientXYDirectional( this.perpendicular, sign );
       if( Math.abs( perpendicularMousePixels - perpendicularOffset ) > 150 )
         return this.model[thisSide];
 
       // Calculate new value
-      var offset = this.gutter.clientXYDirectional( this.direction, sign );
+      var offset = this.canvas.clientXYDirectional( this.direction, sign );
       var mousePixels = e.clientXYDirectional( this.direction, sign );
-      var mouseRange = this.gutter.clientLength( this.direction );
+      var mouseRange = this.canvas.clientLength( this.direction );
       var newPosition = ( mousePixels - offset ) / mouseRange;
 
       // Validate
-      if( newPosition < 0 ) newPosition = 0;
-      if( newPosition > 1 ) newPosition = 1;
-      if( newPosition + this.model[thatSide] > 1 ) // range created by min and max can't zoom to less than 0
-        newPosition = 1 - this.model[thatSide];
+      var originalNewPosition = newPosition;
+      if( minOrMax == 'min' && newPosition < 0                                            ) newPosition = 0;
+      if( minOrMax == 'min' && newPosition > 1 - this.model[thatSide] - this.smallestZoom ) newPosition = 1 - this.model[thatSide] - this.smallestZoom;
+      if( minOrMax == 'max' && newPosition < 0 + this.model[thatSide] + this.smallestZoom ) newPosition = 0 + this.model[thatSide] + this.smallestZoom;
+      if( minOrMax == 'max' && newPosition > 1                                            ) newPosition = 1;
+
       return newPosition;
     }
   }
 
   // ==========================================================================
-  // Initialization of each Instance
+  // Construction of each Instance
   // ==========================================================================
+  this.init();
+
+  // Event Handling
   var that = this;
-  ['min', 'max'].forEach(function(minOrMax){   // Add Drag and Drop handlers for each grip
+
+  // Resize
+  window.addEventListener('resize', function (e){
+    that.init();
+  });
+
+  // Drag and Drop of grips
+  ['min'].forEach(function (minOrMax){   // Add Drag and Drop handlers for each grip
     DragonDrop.addHandler(
       // targetElement
-      that.grip[minOrMax],
+      that.canvas,
       // gripHandler
       function(e){},
       // dragHandler
       function(e){
         var newPosition = that.calculatePosition(e, minOrMax);
-        that.draw( newPosition, minOrMax );
+        that.draw( newPosition, that.model['max'] );
       },
       // dropHandler
       function(e){
         var newPosition = that.calculatePosition(e, minOrMax);
-        that.draw( newPosition, minOrMax );
+        that.draw( newPosition, that.model['max'] );
         that.save( newPosition, minOrMax );
       }
     );
   });
+
+  return this.canvas;
 }
 
 
-function GripScroll( targetId, options ){
-
+function GripScroll(targetId, options)
+{
   // ==========================================================================
   // Private Variables
   // ==========================================================================
   // Create the necessary DOM elements
-  var container = document.getElementById( targetId );
-  var gutter    = { x: container.appendChild( document.createElement('div') )
-                  , y: container.appendChild( document.createElement('div') )
-                  };
-  var bar       = { x: gutter.x.appendChild( document.createElement('div') )
-                  , y: gutter.y.appendChild( document.createElement('div') )
-                  };
-  var grip = { x: { a: bar.x.appendChild( document.createElement('div') )
-                  , b: bar.x.appendChild( document.createElement('div') )
-                  }
-             , y: { a: bar.y.appendChild( document.createElement('div') )
-                  , b: bar.y.appendChild( document.createElement('div') )
-                  }
+  this.container = document.getElementById( targetId );
+  this.container.className = 'gripscroll';
+  this.bar = { x: new GripScrollbar( this.container, 'x' )
+             , y: new GripScrollbar( this.container, 'y' )
              };
 
   // ==========================================================================
@@ -159,46 +180,21 @@ function GripScroll( targetId, options ){
     // ========================================================================
     // Accessors
     // ========================================================================
-    $.getContainer = function(        ){ return  container;     }
-    $.getGutter    = function( xy     ){ return gutter[xy];     }
-    $.getBar       = function( xy     ){ return    bar[xy];     }
-    $.getGrip      = function( xy, ab ){ return   grip[xy][ab]; }
+    $.getContainer = function (  ){ return this.container; }
+    $.getBar       = function (xy){ return this.bar[xy]; }
 
     // ========================================================================
     // Public Methods
     // ========================================================================
-    $.initDOM = function()
+    $.init = function()
     {
-      // Add class names
-      container.className = 'gripscroll-container';
-      gutter.x.className  = 'gripscroll-gutter x';
-      gutter.y.className  = 'gripscroll-gutter y';
-      bar.x.className     = 'gripscroll-bar x';
-      bar.y.className     = 'gripscroll-bar y';
-      grip.x.a.className  = 'gripscroll-grip x a';
-      grip.x.b.className  = 'gripscroll-grip x b';
-      grip.y.a.className  = 'gripscroll-grip y a';
-      grip.y.b.className  = 'gripscroll-grip y b';
-
-      // Add dragabble
-      bar.x.setAttribute('draggable', 'false');
-      bar.y.setAttribute('draggable', 'false');
-      grip.x.a.setAttribute('draggable', 'false');
-      grip.x.b.setAttribute('draggable', 'false');
-      grip.y.a.setAttribute('draggable', 'false');
-      grip.y.b.setAttribute('draggable', 'false');
+      // ...
     };
 
-    $.initDragAndDrop = function()
-    {
-      var yScroll = new GripScrollbar( gutter.y, bar.y, grip.y.a, grip.y.b, 'y' );
-      var xScroll = new GripScrollbar( gutter.x, bar.x, grip.x.a, grip.x.b, 'x' );
-    };
   }
 
   // ==========================================================================
   // Constructor execution
   // ==========================================================================
-  this.initDOM();
-  this.initDragAndDrop();
+  // ...
 }

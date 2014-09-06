@@ -19,7 +19,8 @@ module.exports = function(grunt) {
           "GripScroll.js": "js/*.js"
         },
         options: {
-          beautify: true
+          beautify: true,
+          mangle: false
         }
       }
     },
