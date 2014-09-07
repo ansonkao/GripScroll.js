@@ -6,7 +6,7 @@ function GripScrollbar(container, direction) {
         y: "x"
     }[direction], this.smallestZoom = .125, this.model = {
         min: 0,
-        max: 0
+        max: 1
     }, !GripScrollbar.prototype.initialized) {
         var $ = GripScrollbar.prototype;
         $.initialized = !0, $.init = function() {
@@ -20,50 +20,63 @@ function GripScrollbar(container, direction) {
             }
             this.draw(this.model.min, this.model.max);
         }, $.draw = function(newMin, newMax) {
-            switch (this.canvasContext.clear(), this.canvasContext.strokeStyle = "rgba(96,96,96,0.64)", 
-            this.canvasContext.fillStyle = "rgba(96,96,96,0.60)", this.direction) {
+            switch (void 0 === newMax && (newMax = newMin.max, newMin = newMin.min), this.canvasContext.clear(), 
+            this.canvasContext.strokeStyle = "rgba(96,96,96,0.64)", this.canvasContext.fillStyle = "rgba(96,96,96,0.60)", 
+            this.direction) {
               case "x":
-                this.canvasContext.roundRect(this.width * newMin + .5, .5, this.width * (1 - newMin - newMax) - 1, this.height - 1, 5, !0, !0);
+                this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
                 break;
 
               case "y":
-                this.canvasContext.roundRect(.5, this.height * newMin + .5, this.width - 1, this.height * (1 - newMin - newMax) - 1, 5, !0, !0);
+                this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
             }
         }, $.save = function(newValue, minOrMax) {
             this.model[minOrMax] = newValue;
-        }, $.calculatePosition = function(e, minOrMax) {
+        }, $.calculatePosition = function(e) {
+            var offset = this.canvas.clientXYDirectional(this.direction), mousePixels = e.clientXYDirectional(this.direction), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
+            return newPosition;
+        }, $.isOutsideDragZone = function(e) {
+            var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
+            return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
+        }, $.validatePosition = function(newPosition, minOrMax) {
+            var originalPosition = newPosition;
             switch (minOrMax) {
               case "min":
-                var thisSide = "min", thatSide = "max", sign = 1;
+                0 > newPosition ? newPosition = 0 : newPosition > this.model.max - this.smallestZoom && (newPosition = this.model.max - this.smallestZoom);
                 break;
 
               case "max":
-                var thisSide = "max", thatSide = "min", sign = -1;
-                break;
-
-              default:
-                console.warn("GripScrollbar.calculatePosition(): invalid minOrMax");
+                newPosition > 1 ? newPosition = 1 : newPosition < this.model.min + this.smallestZoom && (newPosition = this.model.min + this.smallestZoom);
             }
-            var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, sign), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, sign);
-            if (Math.abs(perpendicularMousePixels - perpendicularOffset) > 150) return this.model[thisSide];
-            var offset = this.canvas.clientXYDirectional(this.direction, sign), mousePixels = e.clientXYDirectional(this.direction, sign), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
-            return "min" == minOrMax && 0 > newPosition && (newPosition = 0), "min" == minOrMax && newPosition > 1 - this.model[thatSide] - this.smallestZoom && (newPosition = 1 - this.model[thatSide] - this.smallestZoom), 
-            "max" == minOrMax && newPosition < 0 + this.model[thatSide] + this.smallestZoom && (newPosition = 0 + this.model[thatSide] + this.smallestZoom), 
-            "max" == minOrMax && newPosition > 1 && (newPosition = 1), newPosition;
+            return console.log(originalPosition, newPosition), newPosition;
         };
     }
     this.init();
     var that = this;
-    return window.addEventListener("resize", function() {
+    window.addEventListener("resize", function() {
         that.init();
-    }), [ "min" ].forEach(function(minOrMax) {
-        DragonDrop.addHandler(that.canvas, function() {}, function(e) {
-            var newPosition = that.calculatePosition(e, minOrMax);
-            that.draw(newPosition, that.model.max);
-        }, function(e) {
-            var newPosition = that.calculatePosition(e, minOrMax);
-            that.draw(newPosition, that.model.max), that.save(newPosition, minOrMax);
-        });
+    });
+    var thisGrip = null, thatGrip = null;
+    return DragonDrop.addHandler(that.canvas, function(e) {
+        var newPosition = that.calculatePosition(e);
+        Math.abs(newPosition - that.model.min) < .01 ? (thisGrip = "min", thatGrip = "max") : Math.abs(newPosition - that.model.max) < .01 ? (thisGrip = "max", 
+        thatGrip = "min") : (thisGrip = null, thatGrip = null);
+    }, function(e) {
+        if (thisGrip) {
+            var newPosition = that.calculatePosition(e, thisGrip);
+            newPosition = that.validatePosition(newPosition, thisGrip);
+            var bothPositions = {};
+            bothPositions[thisGrip] = newPosition, bothPositions[thatGrip] = that.model[thatGrip], 
+            that.draw(bothPositions);
+        }
+    }, function(e) {
+        if (thisGrip) {
+            var newPosition = that.calculatePosition(e, thisGrip);
+            newPosition = that.validatePosition(newPosition, thisGrip);
+            var bothPositions = {};
+            bothPositions[thisGrip] = newPosition, bothPositions[thatGrip] = that.model[thatGrip], 
+            that.draw(bothPositions), that.save(newPosition, thisGrip);
+        }
     }), this.canvas;
 }
 
@@ -116,7 +129,7 @@ var DragonDrop = function() {
 }();
 
 MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
-    switch (axis) {
+    switch (sign = void 0 === sign ? 1 : sign, axis) {
       case "x":
         switch (sign > 0) {
           case !0:
@@ -139,7 +152,7 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
         return null;
     }
 }, Element.prototype.offsetDirectional = function(axis, sign) {
-    switch (axis) {
+    switch (sign = void 0 === sign ? 1 : sign, axis) {
       case "x":
         switch (sign > 0) {
           case !0:
@@ -162,6 +175,7 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
         return null;
     }
 }, Element.prototype.clientXYDirectional = function(axis, sign) {
+    sign = void 0 === sign ? 1 : sign;
     var rect = this.getBoundingClientRect();
     switch (axis) {
       case "x":
@@ -198,11 +212,11 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
 }, CanvasRenderingContext2D.prototype.clear = CanvasRenderingContext2D.prototype.clear || function(preserveTransform) {
     preserveTransform && (this.save(), this.setTransform(1, 0, 0, 1, 0, 0)), this.clearRect(0, 0, this.canvas.width, this.canvas.height), 
     preserveTransform && this.restore();
-}, CanvasRenderingContext2D.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect || function(x, y, width, height, radius, fill, stroke) {
-    this.beginPath(), this.moveTo(x + radius, y), this.lineTo(x + width - radius, y), 
-    this.quadraticCurveTo(x + width, y, x + width, y + radius), this.lineTo(x + width, y + height - radius), 
-    this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height), this.lineTo(x + radius, y + height), 
-    this.quadraticCurveTo(x, y + height, x, y + height - radius), this.lineTo(x, y + radius), 
-    this.quadraticCurveTo(x, y, x + radius, y), this.closePath(), stroke && this.stroke(), 
-    fill && this.fill();
+}, CanvasRenderingContext2D.prototype.roundRect = CanvasRenderingContext2D.prototype.roundRect || function(x1, y1, x2, y2, radius, fill, stroke) {
+    this.beginPath(), this.moveTo(.5 + x1 + radius, .5 + y1), this.lineTo(-.5 + x2 - radius, .5 + y1), 
+    this.quadraticCurveTo(-.5 + x2, .5 + y1, -.5 + x2, .5 + y1 + radius), this.lineTo(-.5 + x2, -.5 + y2 - radius), 
+    this.quadraticCurveTo(-.5 + x2, -.5 + y2, -.5 + x2 - radius, -.5 + y2), this.lineTo(.5 + x1 + radius, -.5 + y2), 
+    this.quadraticCurveTo(.5 + x1, -.5 + y2, .5 + x1, -.5 + y2 - radius), this.lineTo(.5 + x1, .5 + y1 + radius), 
+    this.quadraticCurveTo(.5 + x1, .5 + y1, .5 + x1 + radius, .5 + y1), this.closePath(), 
+    stroke && this.stroke(), fill && this.fill();
 };

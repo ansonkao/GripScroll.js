@@ -4,6 +4,8 @@
 // Same as event.clientX or event.clientY but with direction (+x, -x, +y, -y) specifiable
 MouseEvent.prototype.clientXYDirectional = function (axis, sign)
 {
+  sign = sign === undefined ? +1 : sign;
+
   switch( axis )
   {
     case 'x':
@@ -29,6 +31,8 @@ MouseEvent.prototype.clientXYDirectional = function (axis, sign)
 // Same as element.offsetLeft or element.offsetTop but with all four directions (left, right, top, bottom) specifiable
 Element.prototype.offsetDirectional = function (axis, sign)
 {
+  sign = sign === undefined ? +1 : sign;
+
   switch( axis )
   {
     case 'x':
@@ -51,6 +55,8 @@ Element.prototype.offsetDirectional = function (axis, sign)
 // Same as event.clientX or event.clientY but with direction (+x, -x, +y, -y) specifiable and for elements
 Element.prototype.clientXYDirectional = function (axis, sign)
 {
+  sign = sign === undefined ? +1 : sign;
+  
   var rect = this.getBoundingClientRect();
   switch( axis )
   {
@@ -106,18 +112,18 @@ CanvasRenderingContext2D.prototype.clear =
 
 // Rounded Rectangles
 CanvasRenderingContext2D.prototype.roundRect = 
-  CanvasRenderingContext2D.prototype.roundRect || function (x, y, width, height, radius, fill, stroke)
+  CanvasRenderingContext2D.prototype.roundRect || function (x1, y1, x2, y2, radius, fill, stroke)
 {
   this.beginPath();
-  this.moveTo(x + radius, y);
-  this.lineTo(x + width - radius, y);
-  this.quadraticCurveTo(x + width, y, x + width, y + radius);
-  this.lineTo(x + width, y + height - radius);
-  this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  this.lineTo(x + radius, y + height);
-  this.quadraticCurveTo(x, y + height, x, y + height - radius);
-  this.lineTo(x, y + radius);
-  this.quadraticCurveTo(x, y, x + radius, y);
+  this.moveTo(+0.5 + x1 + radius, +0.5 + y1);
+  this.lineTo(-0.5 + x2 - radius, +0.5 + y1);
+  this.quadraticCurveTo(-0.5 + x2, +0.5 + y1, -0.5 + x2, +0.5 + y1 + radius);
+  this.lineTo(-0.5 + x2, -0.5 + y2 - radius);
+  this.quadraticCurveTo(-0.5 + x2, -0.5 + y2, -0.5 + x2 - radius, -0.5 + y2);
+  this.lineTo(+0.5 + x1 + radius, -0.5 + y2);
+  this.quadraticCurveTo(+0.5 + x1, -0.5 + y2, +0.5 + x1, -0.5 + y2 - radius);
+  this.lineTo(+0.5 + x1, +0.5 + y1 + radius);
+  this.quadraticCurveTo(+0.5 + x1, +0.5 + y1, +0.5 + x1 + radius, +0.5 + y1);
   this.closePath();
   if (stroke) this.stroke();
   if (fill) this.fill();
