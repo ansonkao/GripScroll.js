@@ -8,8 +8,6 @@ var DragonDrop = (function(){
   var gripHandlers = [];
   var dragHandlers = [];
   var dropHandlers = [];
-  var startX = null;
-  var startY = null;
 
   // ========================================================================
   // Private Methods
@@ -51,11 +49,7 @@ var DragonDrop = (function(){
   document.onmousewheel = function(e){ e.preventDefault(); }; // Cancel all scroll events during a drag (http://stackoverflow.com/questions/4770025/how-to-disable-scrolling-temporarily)
   document.addEventListener('mousemove', function(e){ // Catch all mousemove events as drags
     if( isDragging() )
-    {
-      e.startX = startX;
-      e.startY = startY;
       dragHandlers[currentTarget](e);
-    }
   });
 
   // Drop handling
@@ -65,12 +59,8 @@ var DragonDrop = (function(){
     return function(e) {
       if( isDragging() && e.which > ignoreLeftClick|0 ) // > ignoreLeftClick|0  is a hack to toggle between all mouse buttons or ignoring the left button
       {
-        e.startX = startX;
-        e.startY = startY;
         dropHandlers[currentTarget](e);
         currentTarget = null;
-        startX = null;
-        startY = null;
       }
     };
   };

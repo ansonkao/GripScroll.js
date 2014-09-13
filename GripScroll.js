@@ -38,8 +38,7 @@ function GripScrollbar(container, direction) {
         }, $.isOutsideDragZone = function(e) {
             var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
             return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
-        }, $.validatePosition = function(newPosition, minOrMax) {
-            var originalPosition = newPosition;
+        }, $.validateEndPosition = function(newPosition, minOrMax) {
             switch (minOrMax) {
               case "min":
                 0 > newPosition ? newPosition = 0 : newPosition > this.model.max - this.smallestZoom && (newPosition = this.model.max - this.smallestZoom);
@@ -48,7 +47,15 @@ function GripScrollbar(container, direction) {
               case "max":
                 newPosition > 1 ? newPosition = 1 : newPosition < this.model.min + this.smallestZoom && (newPosition = this.model.min + this.smallestZoom);
             }
-            return console.log(originalPosition, newPosition), newPosition;
+            return newPosition;
+        }, $.validateBothEndPositions = function(changePosition) {
+            var a = changePosition, newMin = this.model.min + changePosition;
+            0 > newMin && (changePosition -= newMin);
+            var b = changePosition, newMax = this.model.max + changePosition;
+            newMax > 1 && (changePosition -= newMax - 1);
+            var newModel = {};
+            return newModel.min = changePosition + this.model.min, newModel.max = changePosition + this.model.max, 
+            console.log(newMin, newMax, a, b, changePosition, this.model, newModel), newModel;
         };
     }
     this.init();
@@ -56,26 +63,35 @@ function GripScrollbar(container, direction) {
     window.addEventListener("resize", function() {
         that.init();
     });
-    var thisGrip = null, thatGrip = null;
+    var whichGrip = null, otherGrip = null, startPosition = null;
     return DragonDrop.addHandler(that.canvas, function(e) {
-        var newPosition = that.calculatePosition(e);
-        Math.abs(newPosition - that.model.min) < .01 ? (thisGrip = "min", thatGrip = "max") : Math.abs(newPosition - that.model.max) < .01 ? (thisGrip = "max", 
-        thatGrip = "min") : (thisGrip = null, thatGrip = null);
+        startPosition = that.calculatePosition(e), Math.abs(startPosition - that.model.min) < .01 ? (whichGrip = "min", 
+        otherGrip = "max") : Math.abs(startPosition - that.model.max) < .01 ? (whichGrip = "max", 
+        otherGrip = "min") : startPosition > that.model.min && startPosition < that.model.max ? (whichGrip = "mid", 
+        otherGrip = null) : (whichGrip = null, otherGrip = null), console.log("model:", that.model);
     }, function(e) {
-        if (thisGrip) {
-            var newPosition = that.calculatePosition(e, thisGrip);
-            newPosition = that.validatePosition(newPosition, thisGrip);
-            var bothPositions = {};
-            bothPositions[thisGrip] = newPosition, bothPositions[thatGrip] = that.model[thatGrip], 
-            that.draw(bothPositions);
+        if (whichGrip && that.isOutsideDragZone(e)) return void that.draw(that.model);
+        if ("mid" == whichGrip) {
+            var newPosition = that.calculatePosition(e), newModel = that.validateBothEndPositions(newPosition - startPosition);
+            that.draw(newModel);
+        } else if ("min" == whichGrip || "max" == whichGrip) {
+            var newPosition = that.calculatePosition(e);
+            newPosition = that.validateEndPosition(newPosition, whichGrip);
+            var newModel = {};
+            newModel[whichGrip] = newPosition, newModel[otherGrip] = that.model[otherGrip], 
+            that.draw(newModel);
         }
     }, function(e) {
-        if (thisGrip) {
-            var newPosition = that.calculatePosition(e, thisGrip);
-            newPosition = that.validatePosition(newPosition, thisGrip);
-            var bothPositions = {};
-            bothPositions[thisGrip] = newPosition, bothPositions[thatGrip] = that.model[thatGrip], 
-            that.draw(bothPositions), that.save(newPosition, thisGrip);
+        if (whichGrip && that.isOutsideDragZone(e)) return void that.draw(that.model);
+        if ("mid" == whichGrip) {
+            var newPosition = that.calculatePosition(e), newModel = that.validateBothEndPositions(newPosition - startPosition);
+            that.draw(newModel), that.save(newModel.min, "min"), that.save(newModel.max, "max");
+        } else if ("min" == whichGrip || "max" == whichGrip) {
+            var newPosition = that.calculatePosition(e);
+            newPosition = that.validateEndPosition(newPosition, whichGrip);
+            var newModel = {};
+            newModel[whichGrip] = newPosition, newModel[otherGrip] = that.model[otherGrip], 
+            that.draw(newModel), that.save(newPosition, whichGrip);
         }
     }), this.canvas;
 }
@@ -98,11 +114,11 @@ function GripScroll(targetId) {
 var DragonDrop = function() {
     function rootDropHandler(ignoreLeftClick) {
         return function(e) {
-            isDragging() && e.which > ignoreLeftClick | 0 && (e.startX = startX, e.startY = startY, 
-            dropHandlers[currentTarget](e), currentTarget = null, startX = null, startY = null);
+            isDragging() && e.which > ignoreLeftClick | 0 && (dropHandlers[currentTarget](e), 
+            currentTarget = null);
         };
     }
-    var currentTarget = null, targetCounter = 0, gripHandlers = [], dragHandlers = [], dropHandlers = [], startX = null, startY = null, getCurrentTarget = function() {
+    var currentTarget = null, targetCounter = 0, gripHandlers = [], dragHandlers = [], dropHandlers = [], getCurrentTarget = function() {
         return currentTarget;
     }, isDragging = function() {
         return null !== currentTarget;
@@ -119,7 +135,7 @@ var DragonDrop = function() {
     return document.onmousewheel = function(e) {
         e.preventDefault();
     }, document.addEventListener("mousemove", function(e) {
-        isDragging() && (e.startX = startX, e.startY = startY, dragHandlers[currentTarget](e));
+        isDragging() && dragHandlers[currentTarget](e);
     }), document.addEventListener("mouseup", rootDropHandler(!1)), document.addEventListener("mousedown", rootDropHandler(!0)), 
     {
         getCurrentTarget: getCurrentTarget,

@@ -73,10 +73,9 @@ function GripScrollbar(container, direction)
 
     /* Calculates a new position based on a mouse event
      * @e         A mouse event, probably from a drag handler
-     * @minOrMax  'min' or 'max' (indicates which of these 2 positions are being adjusted)
      * @return    Decimal value between 0.0 and 1.0
      */
-    $.calculatePosition = function (e, minOrMax)
+    $.calculatePosition = function (e)
     {
       var offset = this.canvas.clientXYDirectional( this.direction );
       var mousePixels = e.clientXYDirectional( this.direction );
@@ -93,30 +92,55 @@ function GripScrollbar(container, direction)
       if( Math.abs( perpendicularMousePixels - perpendicularOffset ) > 150 )
         return true;
     }
-    // Escape to existing value if cursor drawn too far out
-    // return this.model[otherEnd];
 
-    // Stop at either end or when you are too far zoomed
-    $.validatePosition = function (newPosition, minOrMax)
+    /* Stop at either end or when you trying to drag either end and you are too far zoomed
+     * @newPosition   The attempted position to validate (decimal number between 0.0 and 1.0)
+     * @minOrMax      Which end are we validating? 'min' or 'max'
+     * @return        The validated position (decimal number between 0.0 and 1.0)
+     */
+    $.validateEndPosition = function (newPosition, minOrMax)
     {
-      // Initialize Context
-      var originalPosition = newPosition;
       switch( minOrMax )
       {
         case 'min':
                if( newPosition < 0 ) newPosition = 0;
-          else if( newPosition > this.model['max'] - this.smallestZoom ) newPosition = this.model['max'] - this.smallestZoom;
+          else if( newPosition > this.model.max - this.smallestZoom ) newPosition = this.model.max - this.smallestZoom;
           break;
         case 'max':
                if( newPosition > 1 ) newPosition = 1;
-          else if( newPosition < this.model['min'] + this.smallestZoom ) newPosition = this.model['min'] + this.smallestZoom;
+          else if( newPosition < this.model.min + this.smallestZoom ) newPosition = this.model.min + this.smallestZoom;
           break;
         default:
           // TODO.... error minOrMax checking?
       }
-      console.log( originalPosition, newPosition );
 
       return newPosition;
+    }
+
+    /* Stop at either end or when you are trying to drag the entire bar
+     * @changePosition  The attempted change in position (decimal number between 0.0 and 1.0)
+     * @return          The closest valid model of both ends in the form of: Object{min:0.0,max:1.0}
+     */
+    $.validateBothEndPositions = function(changePosition)
+    {
+var a = changePosition;
+      // Check the min end first
+      var newMin = this.model.min + changePosition;
+      if( newMin < 0 )
+        changePosition -= newMin;
+var b = changePosition;
+      // Check the max end next
+      var newMax = this.model.max + changePosition;
+      if( newMax > 1 )
+        changePosition -= (newMax - 1);
+
+      var newModel =  {};
+          newModel.min = changePosition + this.model.min;
+          newModel.max = changePosition + this.model.max;
+
+console.log( newMin, newMax, a, b, changePosition, this.model, newModel );
+
+      return newModel;
     }
   }
 
@@ -134,41 +158,72 @@ function GripScrollbar(container, direction)
   });
 
   // Drag and Drop of grips
-  var thisGrip = null;
-  var thatGrip = null;
+  var whichGrip = null;
+  var otherGrip = null;
+  var startPosition = null;
   DragonDrop.addHandler(
     // targetElement
     that.canvas,
     // gripHandler
     function(e){
-      var newPosition = that.calculatePosition(e);
-           if( Math.abs( newPosition - that.model.min ) < 0.01 ) { thisGrip = 'min'; thatGrip = 'max'; }
-      else if( Math.abs( newPosition - that.model.max ) < 0.01 ) { thisGrip = 'max'; thatGrip = 'min'; }
-      else                                                       { thisGrip =  null; thatGrip =  null; }
+      startPosition = that.calculatePosition(e);
+           if( Math.abs( startPosition - that.model.min ) < 0.01 )                { whichGrip = 'min'; otherGrip = 'max'; }
+      else if( Math.abs( startPosition - that.model.max ) < 0.01 )                { whichGrip = 'max'; otherGrip = 'min'; }
+      else if( startPosition > that.model.min && startPosition < that.model.max ) { whichGrip = 'mid'; otherGrip =  null; }
+      else                                                                        { whichGrip =  null; otherGrip =  null; }
+      console.log( "model:", that.model );
     },
     // dragHandler
     function(e){
-      if( thisGrip )
+      // Revert to starting point if dragged outside 
+      if( whichGrip && that.isOutsideDragZone(e) )
       {
-        var newPosition = that.calculatePosition(e, thisGrip);
-            newPosition = that.validatePosition(newPosition, thisGrip);
-        var bothPositions = {};
-            bothPositions[thisGrip] = newPosition;
-            bothPositions[thatGrip] = that.model[thatGrip];
-        that.draw( bothPositions );
+        that.draw( that.model );
+        return;
+      }
+
+      if( whichGrip == 'mid' )
+      {
+        var newPosition = that.calculatePosition(e);
+        var newModel = that.validateBothEndPositions(newPosition - startPosition);
+        that.draw( newModel );
+      }
+      else if( whichGrip == 'min' || whichGrip == 'max' )
+      {
+        var newPosition = that.calculatePosition(e);
+            newPosition = that.validateEndPosition(newPosition, whichGrip);
+        var newModel = {};
+            newModel[whichGrip] = newPosition;
+            newModel[otherGrip] = that.model[otherGrip];
+        that.draw( newModel );
       }
     },
     // dropHandler
     function(e){
-      if( thisGrip )
+      // Revert to starting point if dragged outside 
+      if( whichGrip && that.isOutsideDragZone(e) )
       {
-        var newPosition = that.calculatePosition(e, thisGrip);
-            newPosition = that.validatePosition(newPosition, thisGrip);
-        var bothPositions = {};
-            bothPositions[thisGrip] = newPosition;
-            bothPositions[thatGrip] = that.model[thatGrip];
-        that.draw( bothPositions );
-        that.save( newPosition, thisGrip );
+        that.draw( that.model );
+        return;
+      }
+
+      if( whichGrip == 'mid' )
+      {
+        var newPosition = that.calculatePosition(e);
+        var newModel = that.validateBothEndPositions(newPosition - startPosition);
+        that.draw( newModel );
+        that.save( newModel.min, 'min' );
+        that.save( newModel.max, 'max' );
+      }
+      else if( whichGrip == 'min' || whichGrip == 'max' )
+      {
+        var newPosition = that.calculatePosition(e);
+            newPosition = that.validateEndPosition(newPosition, whichGrip);
+        var newModel = {};
+            newModel[whichGrip] = newPosition;
+            newModel[otherGrip] = that.model[otherGrip];
+        that.draw( newModel );
+        that.save( newPosition, whichGrip );
       }
     }
   );
