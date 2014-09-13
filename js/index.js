@@ -1,3 +1,11 @@
+/* A scrollbar with 3 grips:
+ * - min, which resizes the end of the scrollbar closer to 0% limit
+ * - max, which resizes the end of the scrollbar closer to 100% limit
+ * - mid, which drags the entire scrollbar between either limit
+ *
+ * This scrollbar is injected into a container. Either or both direction(s)
+ * (x-axis or the y-axis) can be injected individually.
+ */
 function GripScrollbar(container, direction)
 {
   // ==========================================================================
@@ -16,6 +24,9 @@ function GripScrollbar(container, direction)
   this.model         = { min: 0
                        , max: 1
                        };
+
+  var testerVar = direction;
+  
 
   // Prototype
   if( ! GripScrollbar.prototype.initialized )
@@ -75,7 +86,7 @@ function GripScrollbar(container, direction)
      * @e         A mouse event, probably from a drag handler
      * @return    Decimal value between 0.0 and 1.0
      */
-    $.calculatePosition = function (e)
+    $.calculateCursorPosition = function (e)
     {
       var offset = this.canvas.clientXYDirectional( this.direction );
       var mousePixels = e.clientXYDirectional( this.direction );
@@ -123,12 +134,11 @@ function GripScrollbar(container, direction)
      */
     $.validateBothEndPositions = function(changePosition)
     {
-var a = changePosition;
       // Check the min end first
       var newMin = this.model.min + changePosition;
       if( newMin < 0 )
         changePosition -= newMin;
-var b = changePosition;
+
       // Check the max end next
       var newMax = this.model.max + changePosition;
       if( newMax > 1 )
@@ -137,93 +147,96 @@ var b = changePosition;
       var newModel =  {};
           newModel.min = changePosition + this.model.min;
           newModel.max = changePosition + this.model.max;
-
-console.log( newMin, newMax, a, b, changePosition, this.model, newModel );
-
       return newModel;
+    }
+
+    /* Recalculate and draw the scrollbar model based on an attempted drag action on one of the grips.
+     * @e               A mouse event from the attempted drag
+     * @whichGrip       The grip being dragged
+     * @startPosition   The position at which the drag event started
+     * @return          A copy of the new model of both ends in the form of: Object{min:0.0,max:1.0}
+     */
+    $.recalculateModel = function(e, whichGrip, startPosition)
+    {
+      // Cursor was dragged too far - revert to starting point
+      if( whichGrip && this.isOutsideDragZone(e) )
+      {
+        this.draw( this.model );
+        return null;
+      }
+
+      // Scrollbar 'mid' grip was dragged
+      if( whichGrip == 'mid' )
+      {
+        var newPosition = this.calculateCursorPosition(e);
+        var newModel = this.validateBothEndPositions(newPosition - startPosition);
+        this.draw( newModel );
+        return newModel;
+      }
+
+      // Scrollbar end-grip was resized
+      if( whichGrip == 'min' || whichGrip == 'max' )
+      {
+        var newPosition = this.calculateCursorPosition(e);
+            newPosition = this.validateEndPosition(newPosition, whichGrip);
+        var otherGrip = ({min:'max', max:'min'})[whichGrip];
+        var newModel = {};
+            newModel[whichGrip] = newPosition;
+            newModel[otherGrip] = this.model[otherGrip];
+        this.draw( newModel );
+        return newModel;
+      }
+
+      return null;
+    }
+
+    // Return pixels as percent units
+    $.pxToPct = function()
+    {
+      switch( this.direction )
+      {
+        case 'x': return 5 / this.width;
+        case 'y': return 5 / this.height;
+      }
     }
   }
 
   // ==========================================================================
   // Construction of each Instance
   // ==========================================================================
-  this.init();
-
-  // Event Handling
   var that = this;
 
-  // Resize
+  // Initialize!
+  that.init();
   window.addEventListener('resize', function (e){
     that.init();
   });
 
   // Drag and Drop of grips
   var whichGrip = null;
-  var otherGrip = null;
   var startPosition = null;
   DragonDrop.addHandler(
     // targetElement
     that.canvas,
     // gripHandler
     function(e){
-      startPosition = that.calculatePosition(e);
-           if( Math.abs( startPosition - that.model.min ) < 0.01 )                { whichGrip = 'min'; otherGrip = 'max'; }
-      else if( Math.abs( startPosition - that.model.max ) < 0.01 )                { whichGrip = 'max'; otherGrip = 'min'; }
-      else if( startPosition > that.model.min && startPosition < that.model.max ) { whichGrip = 'mid'; otherGrip =  null; }
-      else                                                                        { whichGrip =  null; otherGrip =  null; }
-      console.log( "model:", that.model );
+      startPosition = that.calculateCursorPosition(e);
+           if( Math.abs( startPosition - that.model.min ) < that.pxToPct(5)     ) { whichGrip = 'min'; }
+      else if( Math.abs( startPosition - that.model.max ) < that.pxToPct(5)     ) { whichGrip = 'max'; }
+      else if( startPosition > that.model.min && startPosition < that.model.max ) { whichGrip = 'mid'; }
+      else                                                                        { whichGrip =  null; }
     },
     // dragHandler
     function(e){
-      // Revert to starting point if dragged outside 
-      if( whichGrip && that.isOutsideDragZone(e) )
-      {
-        that.draw( that.model );
-        return;
-      }
-
-      if( whichGrip == 'mid' )
-      {
-        var newPosition = that.calculatePosition(e);
-        var newModel = that.validateBothEndPositions(newPosition - startPosition);
-        that.draw( newModel );
-      }
-      else if( whichGrip == 'min' || whichGrip == 'max' )
-      {
-        var newPosition = that.calculatePosition(e);
-            newPosition = that.validateEndPosition(newPosition, whichGrip);
-        var newModel = {};
-            newModel[whichGrip] = newPosition;
-            newModel[otherGrip] = that.model[otherGrip];
-        that.draw( newModel );
-      }
+      that.recalculateModel(e, whichGrip, startPosition);
     },
     // dropHandler
     function(e){
-      // Revert to starting point if dragged outside 
-      if( whichGrip && that.isOutsideDragZone(e) )
+      var newModel = that.recalculateModel(e, whichGrip, startPosition);
+      if( newModel )
       {
-        that.draw( that.model );
-        return;
-      }
-
-      if( whichGrip == 'mid' )
-      {
-        var newPosition = that.calculatePosition(e);
-        var newModel = that.validateBothEndPositions(newPosition - startPosition);
-        that.draw( newModel );
         that.save( newModel.min, 'min' );
         that.save( newModel.max, 'max' );
-      }
-      else if( whichGrip == 'min' || whichGrip == 'max' )
-      {
-        var newPosition = that.calculatePosition(e);
-            newPosition = that.validateEndPosition(newPosition, whichGrip);
-        var newModel = {};
-            newModel[whichGrip] = newPosition;
-            newModel[otherGrip] = that.model[otherGrip];
-        that.draw( newModel );
-        that.save( newPosition, whichGrip );
       }
     }
   );

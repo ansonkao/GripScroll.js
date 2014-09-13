@@ -1,5 +1,5 @@
 function GripScrollbar(container, direction) {
-    if (this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
+    this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
     this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
     this.direction = direction, this.perpendicular = {
         x: "y",
@@ -7,7 +7,8 @@ function GripScrollbar(container, direction) {
     }[direction], this.smallestZoom = .125, this.model = {
         min: 0,
         max: 1
-    }, !GripScrollbar.prototype.initialized) {
+    };
+    if (!GripScrollbar.prototype.initialized) {
         var $ = GripScrollbar.prototype;
         $.initialized = !0, $.init = function() {
             switch (this.direction) {
@@ -32,7 +33,7 @@ function GripScrollbar(container, direction) {
             }
         }, $.save = function(newValue, minOrMax) {
             this.model[minOrMax] = newValue;
-        }, $.calculatePosition = function(e) {
+        }, $.calculateCursorPosition = function(e) {
             var offset = this.canvas.clientXYDirectional(this.direction), mousePixels = e.clientXYDirectional(this.direction), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
             return newPosition;
         }, $.isOutsideDragZone = function(e) {
@@ -49,50 +50,52 @@ function GripScrollbar(container, direction) {
             }
             return newPosition;
         }, $.validateBothEndPositions = function(changePosition) {
-            var a = changePosition, newMin = this.model.min + changePosition;
+            var newMin = this.model.min + changePosition;
             0 > newMin && (changePosition -= newMin);
-            var b = changePosition, newMax = this.model.max + changePosition;
+            var newMax = this.model.max + changePosition;
             newMax > 1 && (changePosition -= newMax - 1);
             var newModel = {};
             return newModel.min = changePosition + this.model.min, newModel.max = changePosition + this.model.max, 
-            console.log(newMin, newMax, a, b, changePosition, this.model, newModel), newModel;
+            newModel;
+        }, $.recalculateModel = function(e, whichGrip, startPosition) {
+            if (whichGrip && this.isOutsideDragZone(e)) return this.draw(this.model), null;
+            if ("mid" == whichGrip) {
+                var newPosition = this.calculateCursorPosition(e), newModel = this.validateBothEndPositions(newPosition - startPosition);
+                return this.draw(newModel), newModel;
+            }
+            if ("min" == whichGrip || "max" == whichGrip) {
+                var newPosition = this.calculateCursorPosition(e);
+                newPosition = this.validateEndPosition(newPosition, whichGrip);
+                var otherGrip = {
+                    min: "max",
+                    max: "min"
+                }[whichGrip], newModel = {};
+                return newModel[whichGrip] = newPosition, newModel[otherGrip] = this.model[otherGrip], 
+                this.draw(newModel), newModel;
+            }
+            return null;
+        }, $.pxToPct = function() {
+            switch (this.direction) {
+              case "x":
+                return 5 / this.width;
+
+              case "y":
+                return 5 / this.height;
+            }
         };
     }
-    this.init();
     var that = this;
-    window.addEventListener("resize", function() {
+    that.init(), window.addEventListener("resize", function() {
         that.init();
     });
-    var whichGrip = null, otherGrip = null, startPosition = null;
+    var whichGrip = null, startPosition = null;
     return DragonDrop.addHandler(that.canvas, function(e) {
-        startPosition = that.calculatePosition(e), Math.abs(startPosition - that.model.min) < .01 ? (whichGrip = "min", 
-        otherGrip = "max") : Math.abs(startPosition - that.model.max) < .01 ? (whichGrip = "max", 
-        otherGrip = "min") : startPosition > that.model.min && startPosition < that.model.max ? (whichGrip = "mid", 
-        otherGrip = null) : (whichGrip = null, otherGrip = null), console.log("model:", that.model);
+        startPosition = that.calculateCursorPosition(e), whichGrip = Math.abs(startPosition - that.model.min) < that.pxToPct(5) ? "min" : Math.abs(startPosition - that.model.max) < that.pxToPct(5) ? "max" : startPosition > that.model.min && startPosition < that.model.max ? "mid" : null;
     }, function(e) {
-        if (whichGrip && that.isOutsideDragZone(e)) return void that.draw(that.model);
-        if ("mid" == whichGrip) {
-            var newPosition = that.calculatePosition(e), newModel = that.validateBothEndPositions(newPosition - startPosition);
-            that.draw(newModel);
-        } else if ("min" == whichGrip || "max" == whichGrip) {
-            var newPosition = that.calculatePosition(e);
-            newPosition = that.validateEndPosition(newPosition, whichGrip);
-            var newModel = {};
-            newModel[whichGrip] = newPosition, newModel[otherGrip] = that.model[otherGrip], 
-            that.draw(newModel);
-        }
+        that.recalculateModel(e, whichGrip, startPosition);
     }, function(e) {
-        if (whichGrip && that.isOutsideDragZone(e)) return void that.draw(that.model);
-        if ("mid" == whichGrip) {
-            var newPosition = that.calculatePosition(e), newModel = that.validateBothEndPositions(newPosition - startPosition);
-            that.draw(newModel), that.save(newModel.min, "min"), that.save(newModel.max, "max");
-        } else if ("min" == whichGrip || "max" == whichGrip) {
-            var newPosition = that.calculatePosition(e);
-            newPosition = that.validateEndPosition(newPosition, whichGrip);
-            var newModel = {};
-            newModel[whichGrip] = newPosition, newModel[otherGrip] = that.model[otherGrip], 
-            that.draw(newModel), that.save(newPosition, whichGrip);
-        }
+        var newModel = that.recalculateModel(e, whichGrip, startPosition);
+        newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
     }), this.canvas;
 }
 
