@@ -91,7 +91,7 @@ function GripScroll(container, direction) {
         that.init();
     });
     var whichGrip = null, startPosition = null;
-    DragonDrop.addHandler(that.canvas, function(e) {
+    DragQueen.addHandler(that.canvas, function(e) {
         startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition);
     }, function(e) {
         that.recalculateModel(e, whichGrip, startPosition);
@@ -101,7 +101,7 @@ function GripScroll(container, direction) {
     });
 }
 
-var DragonDrop = function() {
+var DragQueen = function() {
     function rootDropHandler(ignoreLeftClick) {
         return function(e) {
             isDragging() && e.which > ignoreLeftClick | 0 && (dropHandlers[currentTarget](e), 

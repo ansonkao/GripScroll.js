@@ -227,7 +227,7 @@ function GripScroll(container, direction)
   // Drag and Drop of grips
   var whichGrip = null;
   var startPosition = null;
-  DragonDrop.addHandler(
+  DragQueen.addHandler(
     // targetElement
     that.canvas,
     // gripHandler
