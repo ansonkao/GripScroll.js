@@ -23,7 +23,9 @@
 <script lang="text/javascript" src="GripScroll.js"></script>
 <script>
 // GripScroll demo...
-var demo = new GripScroll('target');
+var target = document.getElementById('target');
+var scrollX = new GripScroll(target, 'x');
+var scrollY = new GripScroll(target, 'y');
 </script>
 
 </body>

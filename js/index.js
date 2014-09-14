@@ -6,7 +6,7 @@
  * This scrollbar is injected into a container. Either or both direction(s)
  * (x-axis or the y-axis) can be injected individually.
  */
-function GripScrollbar(container, direction)
+function GripScroll(container, direction)
 {
   // ==========================================================================
   // Private Members
@@ -29,9 +29,9 @@ function GripScrollbar(container, direction)
   
 
   // Prototype
-  if( ! GripScrollbar.prototype.initialized )
+  if( ! GripScroll.prototype.initialized )
   {
-    var $ = GripScrollbar.prototype;
+    var $ = GripScroll.prototype;
     $.initialized = true;
 
     // ========================================================================
@@ -94,6 +94,18 @@ function GripScrollbar(container, direction)
       var newPosition = ( mousePixels - offset ) / mouseRange;
 
       return newPosition;
+    }
+
+    /* Determines which of the scrollbar's 3 possible grips were dragged (if any)
+     * @cursorPosition  The position along the length of the scrollbar where the drag event took place
+     * @return          'min', 'max', 'mid', or null
+     */
+    $.whichGrip = function(cursorPosition)
+    {
+           if( Math.abs( cursorPosition - this.model.min ) < this.pxToPct(5)      ) { return 'min'; }
+      else if( Math.abs( cursorPosition - this.model.max ) < this.pxToPct(5)      ) { return 'max'; }
+      else if( cursorPosition > this.model.min && cursorPosition < this.model.max ) { return 'mid'; }
+      else                                                                          { return  null; }      
     }
 
     $.isOutsideDragZone = function (e)
@@ -221,10 +233,7 @@ function GripScrollbar(container, direction)
     // gripHandler
     function(e){
       startPosition = that.calculateCursorPosition(e);
-           if( Math.abs( startPosition - that.model.min ) < that.pxToPct(5)     ) { whichGrip = 'min'; }
-      else if( Math.abs( startPosition - that.model.max ) < that.pxToPct(5)     ) { whichGrip = 'max'; }
-      else if( startPosition > that.model.min && startPosition < that.model.max ) { whichGrip = 'mid'; }
-      else                                                                        { whichGrip =  null; }
+      whichGrip = that.whichGrip(startPosition);
     },
     // dragHandler
     function(e){
@@ -240,56 +249,4 @@ function GripScrollbar(container, direction)
       }
     }
   );
-
-  return this.canvas;
-}
-
-
-function GripScroll(targetId, options)
-{
-  // ==========================================================================
-  // Private Variables
-  // ==========================================================================
-  // Create the necessary DOM elements
-  this.container = document.getElementById( targetId );
-  this.container.className = 'gripscroll';
-  this.bar = { x: new GripScrollbar( this.container, 'x' )
-             , y: new GripScrollbar( this.container, 'y' )
-             };
-
-  // ==========================================================================
-  // Public Variables
-  // ==========================================================================
-  //this.variableName = ...
-
-  // Prototype
-  if( ! GripScroll.prototype.initialized )
-  {
-    var $ = GripScroll.prototype;
-    
-    // ========================================================================
-    // Public Static Variables
-    // ========================================================================
-    $.initialized = true
-
-    // ========================================================================
-    // Accessors
-    // ========================================================================
-    $.getContainer = function (  ){ return this.container; }
-    $.getBar       = function (xy){ return this.bar[xy]; }
-
-    // ========================================================================
-    // Public Methods
-    // ========================================================================
-    $.init = function()
-    {
-      // ...
-    };
-
-  }
-
-  // ==========================================================================
-  // Constructor execution
-  // ==========================================================================
-  // ...
 }

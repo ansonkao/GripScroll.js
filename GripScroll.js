@@ -1,4 +1,4 @@
-function GripScrollbar(container, direction) {
+function GripScroll(container, direction) {
     this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
     this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
     this.direction = direction, this.perpendicular = {
@@ -8,8 +8,8 @@ function GripScrollbar(container, direction) {
         min: 0,
         max: 1
     };
-    if (!GripScrollbar.prototype.initialized) {
-        var $ = GripScrollbar.prototype;
+    if (!GripScroll.prototype.initialized) {
+        var $ = GripScroll.prototype;
         $.initialized = !0, $.init = function() {
             switch (this.direction) {
               case "x":
@@ -36,6 +36,8 @@ function GripScrollbar(container, direction) {
         }, $.calculateCursorPosition = function(e) {
             var offset = this.canvas.clientXYDirectional(this.direction), mousePixels = e.clientXYDirectional(this.direction), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
             return newPosition;
+        }, $.whichGrip = function(cursorPosition) {
+            return Math.abs(cursorPosition - this.model.min) < this.pxToPct(5) ? "min" : Math.abs(cursorPosition - this.model.max) < this.pxToPct(5) ? "max" : cursorPosition > this.model.min && cursorPosition < this.model.max ? "mid" : null;
         }, $.isOutsideDragZone = function(e) {
             var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
             return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
@@ -89,29 +91,14 @@ function GripScrollbar(container, direction) {
         that.init();
     });
     var whichGrip = null, startPosition = null;
-    return DragonDrop.addHandler(that.canvas, function(e) {
-        startPosition = that.calculateCursorPosition(e), whichGrip = Math.abs(startPosition - that.model.min) < that.pxToPct(5) ? "min" : Math.abs(startPosition - that.model.max) < that.pxToPct(5) ? "max" : startPosition > that.model.min && startPosition < that.model.max ? "mid" : null;
+    DragonDrop.addHandler(that.canvas, function(e) {
+        startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition);
     }, function(e) {
         that.recalculateModel(e, whichGrip, startPosition);
     }, function(e) {
         var newModel = that.recalculateModel(e, whichGrip, startPosition);
         newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
-    }), this.canvas;
-}
-
-function GripScroll(targetId) {
-    if (this.container = document.getElementById(targetId), this.container.className = "gripscroll", 
-    this.bar = {
-        x: new GripScrollbar(this.container, "x"),
-        y: new GripScrollbar(this.container, "y")
-    }, !GripScroll.prototype.initialized) {
-        var $ = GripScroll.prototype;
-        $.initialized = !0, $.getContainer = function() {
-            return this.container;
-        }, $.getBar = function(xy) {
-            return this.bar[xy];
-        }, $.init = function() {};
-    }
+    });
 }
 
 var DragonDrop = function() {
