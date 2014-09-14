@@ -93,14 +93,15 @@ function GripScroll(container, direction) {
     });
     var whichGrip = null, startPosition = null;
     DragQueen.addHandler(that.canvas, function(e) {
-        that.isDragging = !0, startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition);
+        that.isDragging = !0, startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition), 
+        "mid" == whichGrip ? CurseWords.setExplicitCursor("grabbing") : whichGrip && CurseWords.setExplicitCursor(that.direction + "resize");
     }, function(e) {
         that.recalculateModel(e, whichGrip, startPosition);
     }, function(e) {
-        that.isDragging = !1;
+        that.isDragging = !1, CurseWords.clearExplicitCursor();
         var newModel = that.recalculateModel(e, whichGrip, startPosition);
         newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
-    }), CurseWords.addImplicitCursor(that.canvas, function() {
+    }), CurseWords.addImplicitCursorHandler(that.canvas, function() {
         that.isHovering = !0, that.draw();
     }, function(e) {
         var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition), newCursor = null;
@@ -127,29 +128,36 @@ function GripScroll(container, direction) {
 }
 
 var CurseWords = function() {
-    var currentTarget = null, targetCounter = 0, targets = [], enterHandlers = [], hoverHandlers = [], exitHandlers = [], currentCursor = [], body = document.getElementsByTagName("body")[0], addImplicitCursor = function(targetElement, enterHandler, hoverHandler, exitHandler) {
+    var currentTarget = null, targetCounter = 0, targets = [], enterHandlers = [], hoverHandlers = [], exitHandlers = [], currentImplicitCursor = "default", currentExplicitCursor = null, body = document.getElementsByTagName("body")[0], addImplicitCursorHandler = function(targetElement, enterHandler, hoverHandler, exitHandler) {
         targets[targetCounter] = targetElement, enterHandlers[targetCounter] = enterHandler, 
         hoverHandlers[targetCounter] = hoverHandler, exitHandlers[targetCounter] = exitHandler, 
         targetCounter++;
-    }, applyCursor = function(newCursor) {
+    }, setExplicitCursor = function(newCursor) {
+        currentExplicitCursor = newCursor, drawCursor();
+    }, clearExplicitCursor = function() {
+        currentExplicitCursor = null, drawCursor();
+    }, drawCursor = function() {
+        var newCursor = null;
+        newCursor = currentExplicitCursor ? currentExplicitCursor : currentImplicitCursor;
         var classes = body.className.split(" ");
         classes = classes.filter(function(c) {
             return 0 !== c.lastIndexOf("curse-words-", 0);
-        }), classes.push("curse-words-" + newCursor), body.className = classes.join(" "), 
-        currentCursor = newCursor;
+        }), classes.push("curse-words-" + newCursor), body.className = classes.join(" ");
     };
     return document.addEventListener("mouseover", function(e) {
         for (var i = 0; i < targets.length; i++) if (e.toElement == targets[i]) return null != currentTarget && exitHandlers[currentTarget](e), 
         currentTarget = i, void enterHandlers[currentTarget](e);
-        null != currentTarget && exitHandlers[currentTarget](e), applyCursor("default"), 
-        currentTarget = null;
+        null != currentTarget && exitHandlers[currentTarget](e), currentImplicitCursor = "default", 
+        drawCursor(), currentTarget = null;
     }), document.addEventListener("mousemove", function(e) {
         if (null != currentTarget) {
             var newCursor = hoverHandlers[currentTarget](e);
-            newCursor != currentCursor && applyCursor(newCursor);
+            newCursor != currentImplicitCursor && (currentImplicitCursor = newCursor, drawCursor());
         }
     }), {
-        addImplicitCursor: addImplicitCursor
+        addImplicitCursorHandler: addImplicitCursorHandler,
+        setExplicitCursor: setExplicitCursor,
+        clearExplicitCursor: clearExplicitCursor
     };
 }(), DragQueen = function() {
     function rootDropHandler(ignoreLeftClick) {

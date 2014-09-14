@@ -247,9 +247,12 @@ function GripScroll(container, direction)
     function(e)
     {
       that.isDragging = true;
-      //CurseWords.addExplicitCursor() TODO TODO TODO TODO
       startPosition = that.calculateCursorPosition(e);
       whichGrip = that.whichGrip(startPosition);
+
+      // 
+      if( whichGrip == 'mid' ) CurseWords.setExplicitCursor('grabbing');
+      else if( whichGrip )     CurseWords.setExplicitCursor(that.direction+'resize');
     },
     // dragHandler
     function(e)
@@ -260,6 +263,7 @@ function GripScroll(container, direction)
     function(e)
     {
       that.isDragging = false;
+      CurseWords.clearExplicitCursor();
       var newModel = that.recalculateModel(e, whichGrip, startPosition);
       if( newModel )
       {
@@ -270,7 +274,7 @@ function GripScroll(container, direction)
   );
 
   // Hovering / Cursor management
-  CurseWords.addImplicitCursor(
+  CurseWords.addImplicitCursorHandler(
     // targetElement
     that.canvas,
     // enterHandler
