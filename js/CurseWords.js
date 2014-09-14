@@ -16,10 +16,11 @@ var CurseWords = (function(){
   var currentCursor = [];
   var body = document.getElementsByTagName('body')[0];
 
+
   // ========================================================================
   // Private Methods
   // ========================================================================
-  var addTarget = function(targetElement, enterHandler, hoverHandler, exitHandler )
+  var addImplicitCursor = function(targetElement, enterHandler, hoverHandler, exitHandler )
     {
       targets[targetCounter] = targetElement;
       enterHandlers[targetCounter] = enterHandler;
@@ -28,6 +29,16 @@ var CurseWords = (function(){
       targetCounter++;
       return;
     };
+
+  var addExplicitCursor = function()
+  {
+    
+  }
+
+  var removeExplicitCursor = function()
+  {
+
+  }
 
   var applyCursor = function(newCursor)
     {
@@ -79,6 +90,6 @@ var CurseWords = (function(){
   // ========================================================================
   // Public Methods
   // ========================================================================
-  return  { addTarget: addTarget
+  return  { addImplicitCursor: addImplicitCursor
           };
 })();

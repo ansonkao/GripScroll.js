@@ -21,11 +21,12 @@ function GripScroll(container, direction)
   this.direction     = direction;
   this.perpendicular = ({x:'y', y:'x'})[direction];
   this.smallestZoom  = 0.125;
+  this.isHovering    = false;
+  this.isDragging    = false;
   this.model         = { min: 0
                        , max: 1
                        };
 
-  var testerVar = direction;
   
 
   // Prototype
@@ -60,15 +61,23 @@ function GripScroll(container, direction)
     // Render to the screen with new values (not necessarily persistent ones)
     $.draw = function (newMin, newMax)
     {
-      if( newMax === undefined )  // Accept an object of the form {min:AAA, max:BBB}
+      if( ! newMin && newMin !== 0 )  // No arguments - just draw the current model
+      {
+        newMin = this.model.min;
+        newMax = this.model.max;
+      }
+      else if( ! newMax )  // No second argument - accept an object of the form {min:AAA, max:BBB} for the first argument
       {
         newMax = newMin['max'];
         newMin = newMin['min'];
       }
 
       this.canvasContext.clear();
-      this.canvasContext.strokeStyle = 'rgba(96,96,96,0.64)';
-      this.canvasContext.fillStyle   = 'rgba(96,96,96,0.60)';
+
+      var opacity = this.isHovering || this.isDragging ? '0.64' : '0.48'; 
+      this.canvasContext.strokeStyle = 'rgba(96,96,96,'+opacity+')';
+      this.canvasContext.fillStyle   = 'rgba(92,92,92,'+opacity+')';
+
       switch( this.direction )
       {
         case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5, true, true); break;
@@ -233,6 +242,8 @@ function GripScroll(container, direction)
     // gripHandler
     function(e)
     {
+      that.isDragging = true;
+      //CurseWords.addExplicitCursor() TODO TODO TODO TODO
       startPosition = that.calculateCursorPosition(e);
       whichGrip = that.whichGrip(startPosition);
     },
@@ -244,6 +255,7 @@ function GripScroll(container, direction)
     // dropHandler
     function(e)
     {
+      that.isDragging = false;
       var newModel = that.recalculateModel(e, whichGrip, startPosition);
       if( newModel )
       {
@@ -253,31 +265,35 @@ function GripScroll(container, direction)
     }
   );
 
-  CurseWords.addTarget(
+  // Hovering / Cursor management
+  CurseWords.addImplicitCursor(
     // targetElement
     that.canvas,
     // enterHandler
-    function(e)
-    {
-      console.log( 'enter', e );
+    function(e){
+      that.isHovering = true;
+      that.draw();
     },
     // hoverHandler
     function(e)
     {
       var newPosition = that.calculateCursorPosition(e);
       var hoverGrip = that.whichGrip(newPosition);
+      var newCursor = null;
       switch( hoverGrip )
       {
-        case 'min': return that.direction+'resize'; break;
-        case 'max': return that.direction+'resize'; break;
-        case 'mid': return 'grab'; break;
-           default: return 'default'; break;
+        case 'min': that.isHovering = true;  newCursor = that.direction+'resize'; break;
+        case 'max': that.isHovering = true;  newCursor = that.direction+'resize'; break;
+        case 'mid': that.isHovering = true;  newCursor = 'grab'; break;
+           default: that.isHovering = false; newCursor = 'default';
       }
+      that.draw();
+      return newCursor;
     },
     // exitHandler
-    function(e)
-    {
-      console.log( 'exit', e );
+    function(e){
+      that.isHovering = false;
+      that.draw();
     }
   );
 }

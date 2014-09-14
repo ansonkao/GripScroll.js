@@ -1,14 +1,14 @@
 function GripScroll(container, direction) {
-    this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
+    if (this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
     this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
     this.direction = direction, this.perpendicular = {
         x: "y",
         y: "x"
-    }[direction], this.smallestZoom = .125, this.model = {
+    }[direction], this.smallestZoom = .125, this.isHovering = !1, this.isDragging = !1, 
+    this.model = {
         min: 0,
         max: 1
-    };
-    if (!GripScroll.prototype.initialized) {
+    }, !GripScroll.prototype.initialized) {
         var $ = GripScroll.prototype;
         $.initialized = !0, $.init = function() {
             switch (this.direction) {
@@ -21,8 +21,10 @@ function GripScroll(container, direction) {
             }
             this.draw(this.model.min, this.model.max);
         }, $.draw = function(newMin, newMax) {
-            switch (void 0 === newMax && (newMax = newMin.max, newMin = newMin.min), this.canvasContext.clear(), 
-            this.canvasContext.strokeStyle = "rgba(96,96,96,0.64)", this.canvasContext.fillStyle = "rgba(96,96,96,0.60)", 
+            newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
+            newMax = this.model.max), this.canvasContext.clear();
+            var opacity = this.isHovering || this.isDragging ? "0.64" : "0.48";
+            switch (this.canvasContext.strokeStyle = "rgba(96,96,96," + opacity + ")", this.canvasContext.fillStyle = "rgba(92,92,92," + opacity + ")", 
             this.direction) {
               case "x":
                 this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
@@ -92,36 +94,41 @@ function GripScroll(container, direction) {
     });
     var whichGrip = null, startPosition = null;
     DragQueen.addHandler(that.canvas, function(e) {
-        startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition);
+        that.isDragging = !0, startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition);
     }, function(e) {
         that.recalculateModel(e, whichGrip, startPosition);
     }, function(e) {
+        that.isDragging = !1;
         var newModel = that.recalculateModel(e, whichGrip, startPosition);
         newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
-    }), CurseWords.addTarget(that.canvas, function(e) {
-        console.log("enter", e);
+    }), CurseWords.addImplicitCursor(that.canvas, function() {
+        that.isHovering = !0, that.draw();
     }, function(e) {
-        var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition);
+        var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition), newCursor = null;
         switch (hoverGrip) {
           case "min":
-            return that.direction + "resize";
+            that.isHovering = !0, newCursor = that.direction + "resize";
+            break;
 
           case "max":
-            return that.direction + "resize";
+            that.isHovering = !0, newCursor = that.direction + "resize";
+            break;
 
           case "mid":
-            return "grab";
+            that.isHovering = !0, newCursor = "grab";
+            break;
 
           default:
-            return "default";
+            that.isHovering = !1, newCursor = "default";
         }
-    }, function(e) {
-        console.log("exit", e);
+        return that.draw(), newCursor;
+    }, function() {
+        that.isHovering = !1, that.draw();
     });
 }
 
 var CurseWords = function() {
-    var currentTarget = null, targetCounter = 0, targets = [], enterHandlers = [], hoverHandlers = [], exitHandlers = [], currentCursor = [], body = document.getElementsByTagName("body")[0], addTarget = function(targetElement, enterHandler, hoverHandler, exitHandler) {
+    var currentTarget = null, targetCounter = 0, targets = [], enterHandlers = [], hoverHandlers = [], exitHandlers = [], currentCursor = [], body = document.getElementsByTagName("body")[0], addImplicitCursor = function(targetElement, enterHandler, hoverHandler, exitHandler) {
         targets[targetCounter] = targetElement, enterHandlers[targetCounter] = enterHandler, 
         hoverHandlers[targetCounter] = hoverHandler, exitHandlers[targetCounter] = exitHandler, 
         targetCounter++;
@@ -143,7 +150,7 @@ var CurseWords = function() {
             newCursor != currentCursor && applyCursor(newCursor);
         }
     }), {
-        addTarget: addTarget
+        addImplicitCursor: addImplicitCursor
     };
 }(), DragQueen = function() {
     function rootDropHandler(ignoreLeftClick) {
