@@ -2,7 +2,8 @@
 // MOUSE EVENT EXTENSIONS
 // ============================================================================
 // Same as event.clientX or event.clientY but with direction (+x, -x, +y, -y) specifiable
-MouseEvent.prototype.clientXYDirectional = function (axis, sign)
+MouseEvent.prototype.clientXYDirectional =
+  MouseEvent.prototype.clientXYDirectional || function (axis, sign)
 {
   sign = sign === undefined ? +1 : sign;
 
@@ -29,7 +30,8 @@ MouseEvent.prototype.clientXYDirectional = function (axis, sign)
 // DOM ELEMENT EXTENSIONS
 // ============================================================================
 // Same as element.offsetLeft or element.offsetTop but with all four directions (left, right, top, bottom) specifiable
-Element.prototype.offsetDirectional = function (axis, sign)
+Element.prototype.offsetDirectional =
+  Element.prototype.offsetDirectional || function (axis, sign)
 {
   sign = sign === undefined ? +1 : sign;
 
@@ -53,7 +55,8 @@ Element.prototype.offsetDirectional = function (axis, sign)
 }
 
 // Same as event.clientX or event.clientY but with direction (+x, -x, +y, -y) specifiable and for elements
-Element.prototype.clientXYDirectional = function (axis, sign)
+Element.prototype.clientXYDirectional =
+  Element.prototype.clientXYDirectional || function (axis, sign)
 {
   sign = sign === undefined ? +1 : sign;
   
@@ -78,7 +81,8 @@ Element.prototype.clientXYDirectional = function (axis, sign)
 }
 
 // Same as element.clientWidth or element.clientHeight but with axes specifiable (width, height)
-Element.prototype.clientLength = function (axis)
+Element.prototype.clientLength =
+  Element.prototype.clientLength || function (axis)
 {
   var rect = this.getBoundingClientRect();
   switch( axis )
