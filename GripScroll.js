@@ -23,7 +23,7 @@ function GripScroll(container, direction) {
         }, $.draw = function(newMin, newMax) {
             switch (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
             newMax = this.model.max), this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
-            this.canvasContext.strokeStyle = "rgb(96,96,96)", this.canvasContext.fillStyle = "rgb(128,128,128)", 
+            this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
             this.direction) {
               case "x":
                 this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);

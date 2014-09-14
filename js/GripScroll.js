@@ -79,8 +79,8 @@ function GripScroll(container, direction)
       else
         this.canvas.classList.remove('is-mouseover');
 
-      this.canvasContext.strokeStyle = 'rgb(96,96,96)';
-      this.canvasContext.fillStyle   = 'rgb(128,128,128)';
+      this.canvasContext.strokeStyle = 'rgb(64,64,64)';
+      this.canvasContext.fillStyle   = 'rgb(96,96,96)';
 
       switch( this.direction )
       {
