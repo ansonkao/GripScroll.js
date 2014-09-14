@@ -24,8 +24,31 @@
 <script>
 // GripScroll demo...
 var target = document.getElementById('target');
-var scrollX = new GripScroll(target, 'x');
-var scrollY = new GripScroll(target, 'y');
+var scrollX = new GripScroll(target, 'x', adjustBackgroundX);
+var scrollY = new GripScroll(target, 'y', adjustBackgroundY);
+
+var backgroundSizeX = null;
+var backgroundSizeY = null;
+function adjustBackgroundX(newModel)
+{
+  console.log( newModel );
+  backgroundSizeX = 1/(newModel.max - newModel.min)*100 + '%';
+  target.style.backgroundSize = backgroundSizeX + ' ' + backgroundSizeY;
+
+  // Force repaint
+  target.style.display = 'none';
+  target.style.display = 'block';
+}
+function adjustBackgroundY(newModel)
+{
+  console.log( newModel );
+  backgroundSizeY = 1/(newModel.max - newModel.min)*100 + '%';
+  target.style.backgroundSize = backgroundSizeX + ' ' + backgroundSizeY;
+  
+  // Force repaint
+  target.style.display = 'none';
+  target.style.display = 'block';
+}
 </script>
 
 </body>

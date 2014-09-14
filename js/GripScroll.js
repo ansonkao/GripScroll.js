@@ -6,7 +6,7 @@
  * This scrollbar is injected into a container. Either or both direction(s)
  * (x-axis or the y-axis) can be injected individually.
  */
-function GripScroll(container, direction)
+function GripScroll(container, direction, callback)
 {
   // ==========================================================================
   // Private Members
@@ -26,7 +26,7 @@ function GripScroll(container, direction)
   this.model         = { min: 0
                        , max: 1
                        };
-
+  this.callback      = callback;
   
 
   // Prototype
@@ -87,6 +87,8 @@ function GripScroll(container, direction)
         case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5, true, true); break;
         case 'y': this.canvasContext.roundRect(0, this.height*newMin, this.width, this.height*newMax, 5, true, true); break;
       }
+
+      this.callback( this.model );
     };
 
     // Persist the values to the local model

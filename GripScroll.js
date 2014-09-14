@@ -1,4 +1,4 @@
-function GripScroll(container, direction) {
+function GripScroll(container, direction, callback) {
     if (this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
     this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
     this.direction = direction, this.perpendicular = {
@@ -8,7 +8,7 @@ function GripScroll(container, direction) {
     this.model = {
         min: 0,
         max: 1
-    }, !GripScroll.prototype.initialized) {
+    }, this.callback = callback, !GripScroll.prototype.initialized) {
         var $ = GripScroll.prototype;
         $.initialized = !0, $.init = function() {
             switch (this.direction) {
@@ -32,6 +32,7 @@ function GripScroll(container, direction) {
               case "y":
                 this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
             }
+            this.callback(this.model);
         }, $.save = function(newValue, minOrMax) {
             this.model[minOrMax] = newValue;
         }, $.calculateCursorPosition = function(e) {
