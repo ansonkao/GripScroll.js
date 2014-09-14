@@ -23,6 +23,8 @@ body.curse-words-grabbing {
 }
 .gripscroll .bar {
   position: absolute;
+  opacity: 0.48;
+  transition: opacity 0.25s;
 }
 .gripscroll .bar.x {
   bottom: 5px;
@@ -35,4 +37,7 @@ body.curse-words-grabbing {
   right: 5px;
   bottom: 18px;
   width: 10px;
+}
+.gripscroll .bar.is-mouseover {
+  opacity: 0.8;
 }

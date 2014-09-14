@@ -6,6 +6,8 @@
 
   .bar {
     position: absolute;
+    opacity: 0.48;
+    transition: opacity 0.25s;
 
     &.x {
       bottom: 5px;
@@ -18,6 +20,10 @@
       right: 5px;
       bottom: 18px;
       width: 10px;
+    }
+
+    &.is-mouseover {
+      opacity: 0.80
     }
   }
 }

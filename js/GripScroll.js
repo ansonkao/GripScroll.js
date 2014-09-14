@@ -74,9 +74,13 @@ function GripScroll(container, direction)
 
       this.canvasContext.clear();
 
-      var opacity = this.isHovering || this.isDragging ? '0.64' : '0.48'; 
-      this.canvasContext.strokeStyle = 'rgba(96,96,96,'+opacity+')';
-      this.canvasContext.fillStyle   = 'rgba(92,92,92,'+opacity+')';
+      if( this.isHovering || this.isDragging )
+        this.canvas.classList.add('is-mouseover');
+      else
+        this.canvas.classList.remove('is-mouseover');
+
+      this.canvasContext.strokeStyle = 'rgb(96,96,96)';
+      this.canvasContext.fillStyle   = 'rgb(128,128,128)';
 
       switch( this.direction )
       {
@@ -282,9 +286,9 @@ function GripScroll(container, direction)
       var newCursor = null;
       switch( hoverGrip )
       {
-        case 'min': that.isHovering = true;  newCursor = that.direction+'resize'; break;
-        case 'max': that.isHovering = true;  newCursor = that.direction+'resize'; break;
-        case 'mid': that.isHovering = true;  newCursor = 'grab'; break;
+        case 'min': that.isHovering =  true; newCursor = that.direction+'resize'; break;
+        case 'max': that.isHovering =  true; newCursor = that.direction+'resize'; break;
+        case 'mid': that.isHovering =  true; newCursor = 'grab'; break;
            default: that.isHovering = false; newCursor = 'default';
       }
       that.draw();

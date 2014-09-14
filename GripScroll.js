@@ -21,10 +21,9 @@ function GripScroll(container, direction) {
             }
             this.draw(this.model.min, this.model.max);
         }, $.draw = function(newMin, newMax) {
-            newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
-            newMax = this.model.max), this.canvasContext.clear();
-            var opacity = this.isHovering || this.isDragging ? "0.64" : "0.48";
-            switch (this.canvasContext.strokeStyle = "rgba(96,96,96," + opacity + ")", this.canvasContext.fillStyle = "rgba(92,92,92," + opacity + ")", 
+            switch (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
+            newMax = this.model.max), this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
+            this.canvasContext.strokeStyle = "rgb(96,96,96)", this.canvasContext.fillStyle = "rgb(128,128,128)", 
             this.direction) {
               case "x":
                 this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
