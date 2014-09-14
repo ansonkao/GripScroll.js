@@ -98,10 +98,54 @@ function GripScroll(container, direction) {
     }, function(e) {
         var newModel = that.recalculateModel(e, whichGrip, startPosition);
         newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
+    }), CurseWords.addTarget(that.canvas, function(e) {
+        console.log("enter", e);
+    }, function(e) {
+        var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition);
+        switch (hoverGrip) {
+          case "min":
+            return that.direction + "resize";
+
+          case "max":
+            return that.direction + "resize";
+
+          case "mid":
+            return "grab";
+
+          default:
+            return "default";
+        }
+    }, function(e) {
+        console.log("exit", e);
     });
 }
 
-var DragQueen = function() {
+var CurseWords = function() {
+    var currentTarget = null, targetCounter = 0, targets = [], enterHandlers = [], hoverHandlers = [], exitHandlers = [], currentCursor = [], body = document.getElementsByTagName("body")[0], addTarget = function(targetElement, enterHandler, hoverHandler, exitHandler) {
+        targets[targetCounter] = targetElement, enterHandlers[targetCounter] = enterHandler, 
+        hoverHandlers[targetCounter] = hoverHandler, exitHandlers[targetCounter] = exitHandler, 
+        targetCounter++;
+    }, applyCursor = function(newCursor) {
+        var classes = body.className.split(" ");
+        classes = classes.filter(function(c) {
+            return 0 !== c.lastIndexOf("curse-words-", 0);
+        }), classes.push("curse-words-" + newCursor), body.className = classes.join(" "), 
+        currentCursor = newCursor;
+    };
+    return document.addEventListener("mouseover", function(e) {
+        for (var i = 0; i < targets.length; i++) if (e.toElement == targets[i]) return null != currentTarget && exitHandlers[currentTarget](e), 
+        currentTarget = i, void enterHandlers[currentTarget](e);
+        null != currentTarget && exitHandlers[currentTarget](e), applyCursor("default"), 
+        currentTarget = null;
+    }), document.addEventListener("mousemove", function(e) {
+        if (null != currentTarget) {
+            var newCursor = hoverHandlers[currentTarget](e);
+            newCursor != currentCursor && applyCursor(newCursor);
+        }
+    }), {
+        addTarget: addTarget
+    };
+}(), DragQueen = function() {
     function rootDropHandler(ignoreLeftClick) {
         return function(e) {
             isDragging() && e.which > ignoreLeftClick | 0 && (dropHandlers[currentTarget](e), 
@@ -134,7 +178,7 @@ var DragQueen = function() {
     };
 }();
 
-MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
+MouseEvent.prototype.clientXYDirectional = MouseEvent.prototype.clientXYDirectional || function(axis, sign) {
     switch (sign = void 0 === sign ? 1 : sign, axis) {
       case "x":
         switch (sign > 0) {
@@ -157,7 +201,7 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
       default:
         return null;
     }
-}, Element.prototype.offsetDirectional = function(axis, sign) {
+}, Element.prototype.offsetDirectional = Element.prototype.offsetDirectional || function(axis, sign) {
     switch (sign = void 0 === sign ? 1 : sign, axis) {
       case "x":
         switch (sign > 0) {
@@ -180,7 +224,7 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
       default:
         return null;
     }
-}, Element.prototype.clientXYDirectional = function(axis, sign) {
+}, Element.prototype.clientXYDirectional = Element.prototype.clientXYDirectional || function(axis, sign) {
     sign = void 0 === sign ? 1 : sign;
     var rect = this.getBoundingClientRect();
     switch (axis) {
@@ -205,7 +249,7 @@ MouseEvent.prototype.clientXYDirectional = function(axis, sign) {
       default:
         return null;
     }
-}, Element.prototype.clientLength = function(axis) {
+}, Element.prototype.clientLength = Element.prototype.clientLength || function(axis) {
     var rect = this.getBoundingClientRect();
     switch (axis) {
       default:

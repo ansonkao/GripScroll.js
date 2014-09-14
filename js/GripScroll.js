@@ -231,22 +231,53 @@ function GripScroll(container, direction)
     // targetElement
     that.canvas,
     // gripHandler
-    function(e){
+    function(e)
+    {
       startPosition = that.calculateCursorPosition(e);
       whichGrip = that.whichGrip(startPosition);
     },
     // dragHandler
-    function(e){
+    function(e)
+    {
       that.recalculateModel(e, whichGrip, startPosition);
     },
     // dropHandler
-    function(e){
+    function(e)
+    {
       var newModel = that.recalculateModel(e, whichGrip, startPosition);
       if( newModel )
       {
         that.save( newModel.min, 'min' );
         that.save( newModel.max, 'max' );
       }
+    }
+  );
+
+  CurseWords.addTarget(
+    // targetElement
+    that.canvas,
+    // enterHandler
+    function(e)
+    {
+      console.log( 'enter', e );
+    },
+    // hoverHandler
+    function(e)
+    {
+      var newPosition = that.calculateCursorPosition(e);
+      var hoverGrip = that.whichGrip(newPosition);
+      switch( hoverGrip )
+      {
+        case 'min': return that.direction+'resize'; break;
+        case 'max': return that.direction+'resize'; break;
+        case 'mid': return 'grab'; break;
+           default: return 'default'; break;
+      }
+    },
+    // exitHandler
+    function(e)
+    {
+      console.log( 'exit', e );
     }
   );
 }

@@ -1,3 +1,21 @@
+body.curse-words-default {
+  cursor: default;
+}
+body.curse-words-xresize {
+  cursor: ew-resize;
+}
+body.curse-words-yresize {
+  cursor: ns-resize;
+}
+body.curse-words-grab {
+  cursor: grab;
+  cursor: -webkit-grab;
+}
+body.curse-words-grabbing {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+}
+
 .gripscroll {
   position: relative;
   box-sizing: border-box;
