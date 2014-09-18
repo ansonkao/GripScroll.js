@@ -6,7 +6,7 @@
  * This scrollbar is injected into a container. Either or both direction(s)
  * (x-axis or the y-axis) can be injected individually.
  */
-function GripScroll(container, direction, callback)
+function GripScroll(container, direction)
 {
   // ==========================================================================
   // Private Members
@@ -23,11 +23,14 @@ function GripScroll(container, direction, callback)
   this.smallestZoom  = 0.125;
   this.isHovering    = false;
   this.isDragging    = false;
+  this.wasHovering   = null;
+  this.wasDragging   = null;
   this.model         = { min: 0
                        , max: 1
                        };
-  this.callback      = callback;
-  
+  this.oldDrawModel  = { min: null
+                       , max: null
+                       };
 
   // Prototype
   if( ! GripScroll.prototype.initialized )
@@ -72,23 +75,54 @@ function GripScroll(container, direction, callback)
         newMin = newMin['min'];
       }
 
-      this.canvasContext.clear();
+      // Only redraw if necessary
+      if( newMin == this.oldDrawModel.min
+       && newMax == this.oldDrawModel.max
+       && this.wasHovering == this.isHovering
+       && this.wasDragging == this.isDragging
+      )
+        return;
 
-      if( this.isHovering || this.isDragging )
-        this.canvas.classList.add('is-mouseover');
+      // Redraw everything
       else
-        this.canvas.classList.remove('is-mouseover');
-
-      this.canvasContext.strokeStyle = 'rgb(64,64,64)';
-      this.canvasContext.fillStyle   = 'rgb(96,96,96)';
-
-      switch( this.direction )
       {
-        case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5, true, true); break;
-        case 'y': this.canvasContext.roundRect(0, this.height*newMin, this.width, this.height*newMax, 5, true, true); break;
+        this.canvasContext.clear();
+
+        if( this.isHovering || this.isDragging )
+          this.canvas.classList.add('is-mouseover');
+        else
+          this.canvas.classList.remove('is-mouseover');
+
+        this.canvasContext.strokeStyle = 'rgb(64,64,64)';
+        this.canvasContext.fillStyle   = 'rgb(96,96,96)';
+
+        switch( this.direction )
+        {
+          case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5, true, true); break;
+          case 'y': this.canvasContext.roundRect(0, this.height*newMin, this.width, this.height*newMax, 5, true, true); break;
+        }
       }
 
-      this.callback( this.model );
+      // Dispatch update event
+      if( newMin != this.oldDrawModel.min
+       || newMax != this.oldDrawModel.max
+      )
+      {
+        var eventData = { detail:
+                          { min: newMin
+                          , max: newMax
+                          , direction: this.direction
+                          }
+                        };
+        var event = new CustomEvent('gripscroll-update', eventData);
+        this.container.dispatchEvent(event);
+      }
+
+      // Update state tracking
+      this.wasHovering = this.isHovering;
+      this.wasDragging = this.isDragging;
+      this.oldDrawModel.min = newMin;
+      this.oldDrawModel.max = newMax;
     };
 
     // Persist the values to the local model
@@ -115,7 +149,7 @@ function GripScroll(container, direction, callback)
      * @cursorPosition  The position along the length of the scrollbar where the drag event took place
      * @return          'min', 'max', 'mid', or null
      */
-    $.whichGrip = function(cursorPosition)
+    $.whichGrip = function (cursorPosition)
     {
            if( Math.abs( cursorPosition - this.model.min ) < this.pxToPct(5)      ) { return 'min'; }
       else if( Math.abs( cursorPosition - this.model.max ) < this.pxToPct(5)      ) { return 'max'; }
@@ -159,7 +193,7 @@ function GripScroll(container, direction, callback)
      * @changePosition  The attempted change in position (decimal number between 0.0 and 1.0)
      * @return          The closest valid model of both ends in the form of: Object{min:0.0,max:1.0}
      */
-    $.validateBothEndPositions = function(changePosition)
+    $.validateBothEndPositions = function (changePosition)
     {
       // Check the min end first
       var newMin = this.model.min + changePosition;
@@ -242,7 +276,7 @@ function GripScroll(container, direction, callback)
   // Drag and Drop of grips
   var whichGrip = null;
   var startPosition = null;
-  DragQueen.addHandler(
+  DragKing.addHandler(
     // targetElement
     that.canvas,
     // gripHandler

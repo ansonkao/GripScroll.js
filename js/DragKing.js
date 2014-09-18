@@ -1,4 +1,4 @@
-var DragQueen = (function(){
+var DragKing = (function(){
 
   // ==========================================================================
   // Private Variables

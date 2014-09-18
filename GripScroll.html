@@ -10,6 +10,7 @@
 <body class="curse-words-grabbing" style="margin: 0; padding: 2.5%;">
 
 <div id="target" class="gripscroll">
+  <img id="background" src="fractal_design.jpg" />
 </div>
 
 <style>
@@ -17,16 +18,42 @@
     border: 1px solid #888;
     width: 100%;
     height: 100%;
-    background-image: url('fractal_design.jpg');
+    position: relative;
+    overflow: hidden;
+  }
+  #background {
+    position: absolute;
+    left: 0%;
+    right: 0%;
+    width: 100%;
+    height: 100%;
   }
 </style>
 <script lang="text/javascript" src="GripScroll.js"></script>
 <script>
 // GripScroll demo...
 var target = document.getElementById('target');
-var scrollX = new GripScroll(target, 'x', adjustBackgroundX);
-var scrollY = new GripScroll(target, 'y', adjustBackgroundY);
+var background = document.getElementById('background');
+var scrollX = new GripScroll(target, 'x');
+var scrollY = new GripScroll(target, 'y');
 
+target.addEventListener('gripscroll-update', function(e){
+  switch( e.detail.direction )
+  {
+    case 'x':
+      var width = 1/(e.detail.max - e.detail.min);
+      background.style.width  = width*100 + '%';
+      background.style.left = (-1)*width*e.detail.min*100 + '%';
+      break;
+    case 'y':
+      var height = 1/(e.detail.max - e.detail.min);
+      background.style.height = height*100 + '%';
+      background.style.top  = (-1)*height*e.detail.min*100 + '%';
+      break;
+  }
+});
+
+/*
 var backgroundSizeX = null;
 var backgroundSizeY = null;
 function adjustBackgroundX(newModel)
@@ -44,11 +71,12 @@ function adjustBackgroundY(newModel)
   console.log( newModel );
   backgroundSizeY = 1/(newModel.max - newModel.min)*100 + '%';
   target.style.backgroundSize = backgroundSizeX + ' ' + backgroundSizeY;
-  
+
   // Force repaint
   target.style.display = 'none';
   target.style.display = 'block';
 }
+*/
 </script>
 
 </body>

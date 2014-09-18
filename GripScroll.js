@@ -1,14 +1,17 @@
-function GripScroll(container, direction, callback) {
+function GripScroll(container, direction) {
     if (this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
     this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + direction, 
     this.direction = direction, this.perpendicular = {
         x: "y",
         y: "x"
     }[direction], this.smallestZoom = .125, this.isHovering = !1, this.isDragging = !1, 
-    this.model = {
+    this.wasHovering = null, this.wasDragging = null, this.model = {
         min: 0,
         max: 1
-    }, this.callback = callback, !GripScroll.prototype.initialized) {
+    }, this.oldDrawModel = {
+        min: null,
+        max: null
+    }, !GripScroll.prototype.initialized) {
         var $ = GripScroll.prototype;
         $.initialized = !0, $.init = function() {
             switch (this.direction) {
@@ -21,18 +24,31 @@ function GripScroll(container, direction, callback) {
             }
             this.draw(this.model.min, this.model.max);
         }, $.draw = function(newMin, newMax) {
-            switch (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
-            newMax = this.model.max), this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
-            this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
-            this.direction) {
-              case "x":
-                this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
-                break;
+            if (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
+            newMax = this.model.max), newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max || this.wasHovering != this.isHovering || this.wasDragging != this.isDragging) {
+                switch (this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
+                this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
+                this.direction) {
+                  case "x":
+                    this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
+                    break;
 
-              case "y":
-                this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
+                  case "y":
+                    this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
+                }
+                if (newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max) {
+                    var eventData = {
+                        detail: {
+                            min: newMin,
+                            max: newMax,
+                            direction: this.direction
+                        }
+                    }, event = new CustomEvent("gripscroll-update", eventData);
+                    this.container.dispatchEvent(event);
+                }
+                this.wasHovering = this.isHovering, this.wasDragging = this.isDragging, this.oldDrawModel.min = newMin, 
+                this.oldDrawModel.max = newMax;
             }
-            this.callback(this.model);
         }, $.save = function(newValue, minOrMax) {
             this.model[minOrMax] = newValue;
         }, $.calculateCursorPosition = function(e) {
@@ -93,7 +109,7 @@ function GripScroll(container, direction, callback) {
         that.init();
     });
     var whichGrip = null, startPosition = null;
-    DragQueen.addHandler(that.canvas, function(e) {
+    DragKing.addHandler(that.canvas, function(e) {
         that.isDragging = !0, startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition), 
         "mid" == whichGrip ? CurseWords.setExplicitCursor("grabbing") : whichGrip && CurseWords.setExplicitCursor(that.direction + "resize");
     }, function(e) {
@@ -160,7 +176,7 @@ var CurseWords = function() {
         setExplicitCursor: setExplicitCursor,
         clearExplicitCursor: clearExplicitCursor
     };
-}(), DragQueen = function() {
+}(), DragKing = function() {
     function rootDropHandler(ignoreLeftClick) {
         return function(e) {
             isDragging() && e.which > ignoreLeftClick | 0 && (dropHandlers[currentTarget](e), 
