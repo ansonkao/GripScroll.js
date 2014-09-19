@@ -7,7 +7,7 @@
 <link rel="icon" type="img/ico" href="favicon.ico">
 
 </head>
-<body class="curse-words-grabbing" style="margin: 0; padding: 2.5%;">
+<body style="margin: 0; padding: 2.5%;">
 
 <div id="target" class="gripscroll">
   <img id="background" src="fractal_design.jpg" />
@@ -18,6 +18,9 @@
     border: 1px solid #888;
     width: 100%;
     height: 100%;
+    max-width: 600px;
+    max-height: 400px;
+    margin: auto;
     position: relative;
     overflow: hidden;
   }
@@ -31,12 +34,12 @@
 </style>
 <script lang="text/javascript" src="GripScroll.js"></script>
 <script>
-// GripScroll demo...
+// GripScroll
 var target = document.getElementById('target');
-var background = document.getElementById('background');
-var scrollX = new GripScroll(target, 'x');
-var scrollY = new GripScroll(target, 'y');
+GripScroll.add( target );
 
+// Pan and zoom the background image
+var background = document.getElementById('background');
 target.addEventListener('gripscroll-update', function(e){
   switch( e.detail.direction )
   {
@@ -52,31 +55,6 @@ target.addEventListener('gripscroll-update', function(e){
       break;
   }
 });
-
-/*
-var backgroundSizeX = null;
-var backgroundSizeY = null;
-function adjustBackgroundX(newModel)
-{
-  console.log( newModel );
-  backgroundSizeX = 1/(newModel.max - newModel.min)*100 + '%';
-  target.style.backgroundSize = backgroundSizeX + ' ' + backgroundSizeY;
-
-  // Force repaint
-  target.style.display = 'none';
-  target.style.display = 'block';
-}
-function adjustBackgroundY(newModel)
-{
-  console.log( newModel );
-  backgroundSizeY = 1/(newModel.max - newModel.min)*100 + '%';
-  target.style.backgroundSize = backgroundSizeX + ' ' + backgroundSizeY;
-
-  // Force repaint
-  target.style.display = 'none';
-  target.style.display = 'block';
-}
-*/
 </script>
 
 </body>
