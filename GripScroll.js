@@ -85,10 +85,11 @@ GripScroll = function() {
               case "y":
                 this.canvas.width = this.width = 10, this.canvas.height = this.height = container.clientHeight - 20;
             }
-            this.draw(this.model.min, this.model.max);
+            this.wasHovering = null, this.wasDragging = null, this.oldDrawModel.min = null, 
+            this.oldDrawModel.max = null, this.draw(this.model.min, this.model.max);
         }, this.draw = function(newMin, newMax) {
             if (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
-            newMax = this.model.max), newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max || this.wasHovering != this.isHovering || this.wasDragging != this.isDragging) {
+            newMax = this.model.max), newMin != this.oldDrawModel.min || this.wasHovering != this.isHovering || newMax != this.oldDrawModel.max || this.wasDragging != this.isDragging) {
                 switch (this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
                 this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
                 this.direction) {

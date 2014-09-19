@@ -78,7 +78,13 @@ GripScroll = (function(){
             break;
         }
 
-        // Do it!
+        // Clear state tracking
+        this.wasHovering = null;
+        this.wasDragging = null;
+        this.oldDrawModel.min = null;
+        this.oldDrawModel.max = null;
+
+        // Refresh the canvas
         this.draw( this.model.min, this.model.max );
       };
 
@@ -97,10 +103,8 @@ GripScroll = (function(){
         }
 
         // Only redraw if necessary
-        if( newMin == this.oldDrawModel.min
-         && newMax == this.oldDrawModel.max
-         && this.wasHovering == this.isHovering
-         && this.wasDragging == this.isDragging
+        if( newMin == this.oldDrawModel.min && this.wasHovering == this.isHovering
+         && newMax == this.oldDrawModel.max && this.wasDragging == this.isDragging
         )
           return;
 
