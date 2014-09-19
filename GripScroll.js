@@ -52,7 +52,7 @@ var CurseWords = function() {
         targetCounter++;
     };
     return document.onmousewheel = function(e) {
-        e.preventDefault();
+        isDragging() && e.preventDefault();
     }, document.addEventListener("mousemove", function(e) {
         isDragging() && dragHandlers[currentTarget](e);
     }), document.addEventListener("mouseup", rootDropHandler(!1)), document.addEventListener("mousedown", rootDropHandler(!0)), 

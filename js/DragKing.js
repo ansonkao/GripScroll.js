@@ -47,7 +47,7 @@ var DragKing = (function(){
   // Initialization
   // ========================================================================
   // Drag handling
-  document.onmousewheel = function(e){ e.preventDefault(); }; // Cancel all scroll events during a drag (http://stackoverflow.com/questions/4770025/how-to-disable-scrolling-temporarily)
+  document.onmousewheel = function(e){ if( isDragging() ) e.preventDefault(); }; // Cancel all scroll events during a drag (http://stackoverflow.com/questions/4770025/how-to-disable-scrolling-temporarily)
   document.addEventListener('mousemove', function(e){ // Catch all mousemove events as drags
     if( isDragging() )
       dragHandlers[currentTarget](e);
