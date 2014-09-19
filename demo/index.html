@@ -1,8 +1,9 @@
-<html><head>
+<html>
+<head>
 
   <title>GripScroll.js</title>
 
-  <link rel="stylesheet" href="GripScroll.css">
+  <link rel="stylesheet" href="../dist/GripScroll.css">
   <link rel="icon" type="img/ico" href="favicon.ico">
   <link rel="stylesheet" href="http://yandex.st/highlightjs/7.5/styles/github.min.css?ver=3.6.1">
   <script type="text/javascript" src="http://yandex.st/highlightjs/7.5/highlight.min.js"></script>
@@ -30,21 +31,21 @@
 
       <div id="target" class="gripscroll">
         <img id="background" src="fractal_design.jpg" style="height: 100%; top: 0%;">
-      <canvas class="bar x" width="458" height="10"></canvas><canvas class="bar y" width="10" height="248"></canvas></div>
+      </div>
       
       <h3>Usage</h3>
       <p>Add GripScroll to your target container:</p>
 
       <pre><code class="syntax-highlight javascript">
-<span class="keyword">var</span> target = document.querySelector(<span class="string">"#target-container"</span>);
+var target = document.querySelector("#target-container");
 GripScroll.add( target );
       </code></pre>
 
       <p>Update your target whenever the user interacts with the scrollbar(s):</p>
 
       <pre><code class="syntax-highlight javascript">
-target.addEventListener(<span class="string">'gripscroll-update'</span>, <span class="function"><span class="keyword">function</span><span class="params">(e)</span>{</span>
-  <span class="comment">// Your update code here...</span>
+target.addEventListener('gripscroll-update', function(e){
+  // Your update code here...
 });
       </code></pre>
 
@@ -121,7 +122,7 @@ target.addEventListener(<span class="string">'gripscroll-update'</span>, <span c
       font-size: 12px;
     }
   </style>
-  <script src="GripScroll.js"></script>
+  <script src="../dist/GripScroll.js"></script>
   <script>
     // GripScroll
     var target = document.getElementById('target');
@@ -146,5 +147,5 @@ target.addEventListener(<span class="string">'gripscroll-update'</span>, <span c
     });
   </script>
 
-
-</body></html>
+</body>
+</html>
