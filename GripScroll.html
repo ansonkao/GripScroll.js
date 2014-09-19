@@ -1,61 +1,150 @@
-<html>
-<head>
+<html><head>
 
-<title>GripScroll.js</title>
+  <title>GripScroll.js</title>
 
-<link rel="stylesheet" href="GripScroll.css">
-<link rel="icon" type="img/ico" href="favicon.ico">
+  <link rel="stylesheet" href="GripScroll.css">
+  <link rel="icon" type="img/ico" href="favicon.ico">
+  <link rel="stylesheet" href="http://yandex.st/highlightjs/7.5/styles/github.min.css?ver=3.6.1">
+  <script type="text/javascript" src="http://yandex.st/highlightjs/7.5/highlight.min.js"></script>
+  <script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+  </script>
 
 </head>
-<body style="margin: 0; padding: 2.5%;">
+<body class=" curse-words-default">
 
-<div id="target" class="gripscroll">
-  <img id="background" src="fractal_design.jpg" />
-</div>
+  <header>
+    <div class="container">
 
-<style>
-  #target {
-    border: 1px solid #888;
-    width: 100%;
-    height: 100%;
-    max-width: 600px;
-    max-height: 400px;
-    margin: auto;
-    position: relative;
-    overflow: hidden;
-  }
-  #background {
-    position: absolute;
-    left: 0%;
-    right: 0%;
-    width: 100%;
-    height: 100%;
-  }
-</style>
-<script lang="text/javascript" src="GripScroll.js"></script>
-<script>
-// GripScroll
-var target = document.getElementById('target');
+      <h1>GripScroll.js</h1>
+      <h2>A decoupled scrollbar with end-grips, zooming, and an event API for custom coupling with your target element.</h2>
+      <a href="https://github.com/ansonkao/GripScroll.js">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+      </a>
+
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <div id="target" class="gripscroll">
+        <img id="background" src="fractal_design.jpg" style="height: 100%; top: 0%;">
+      <canvas class="bar x" width="458" height="10"></canvas><canvas class="bar y" width="10" height="248"></canvas></div>
+      
+      <h3>Usage</h3>
+      <p>Add GripScroll to your target container:</p>
+
+      <pre><code class="syntax-highlight javascript">
+<span class="keyword">var</span> target = document.querySelector(<span class="string">"#target-container"</span>);
 GripScroll.add( target );
+      </code></pre>
 
-// Pan and zoom the background image
-var background = document.getElementById('background');
-target.addEventListener('gripscroll-update', function(e){
-  switch( e.detail.direction )
-  {
-    case 'x':
-      var width = 1/(e.detail.max - e.detail.min);
-      background.style.width  = width*100 + '%';
-      background.style.left = (-1)*width*e.detail.min*100 + '%';
-      break;
-    case 'y':
-      var height = 1/(e.detail.max - e.detail.min);
-      background.style.height = height*100 + '%';
-      background.style.top  = (-1)*height*e.detail.min*100 + '%';
-      break;
-  }
+      <p>Update your target whenever the user interacts with the scrollbar(s):</p>
+
+      <pre><code class="syntax-highlight javascript">
+target.addEventListener(<span class="string">'gripscroll-update'</span>, <span class="function"><span class="keyword">function</span><span class="params">(e)</span>{</span>
+  <span class="comment">// Your update code here...</span>
 });
-</script>
+      </code></pre>
 
-</body>
-</html>
+      <iframe src="http://ghbtns.com/github-btn.html?user=ansonkao&amp;repo=GripScroll.js&amp;type=watch&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="80" height="20"></iframe>
+
+    </div>
+  </main>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: arial, sans-serif;
+      font-size: 13px;
+      color: #88A;
+      background-color: #DDDDFF;
+    }
+    header {
+      border-top: 10px solid #66A;
+      padding: 30px 0 60px;
+      background-color: #CCE;
+      margin-bottom: -30px;
+    }
+    h1 {
+      font-size: 36px;
+      letter-spacing: -2px;
+      text-align: center;
+      color: #448;
+      margin: 0 0 10px;
+    }
+    h2 {
+      font-size: 18px;
+      letter-spacing: -1px;
+      margin: 0;
+    }
+    h3 {
+      font-size: 24px;
+      letter-spacing: -1px;
+      color: #448;
+      margin: 20px 0 10px;
+    }
+    p {
+      margin: 0 0 5px;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      padding: 0 30px;
+    }
+    #target {
+      margin: auto;
+      border: 1px solid #888;
+      width: 100%;
+      height: 100%;
+      max-width: 480px;
+      max-height: 270px;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    #background {
+      position: absolute;
+      left: 0%;
+      right: 0%;
+      width: 100%;
+      height: 100%;
+    }
+    pre {
+      margin: 10px 0 20px;
+    }
+    pre code {
+      border-radius: 5px;
+      padding: 0 20px;
+      font-size: 12px;
+    }
+  </style>
+  <script src="GripScroll.js"></script>
+  <script>
+    // GripScroll
+    var target = document.getElementById('target');
+    GripScroll.add( target );
+
+    // Pan and zoom the background image
+    var background = document.getElementById('background');
+    target.addEventListener('gripscroll-update', function(e){
+      switch( e.detail.direction )
+      {
+        case 'x':
+          var width = 1/(e.detail.max - e.detail.min);
+          background.style.width  = width*100 + '%';
+          background.style.left = (-1)*width*e.detail.min*100 + '%';
+          break;
+        case 'y':
+          var height = 1/(e.detail.max - e.detail.min);
+          background.style.height = height*100 + '%';
+          background.style.top  = (-1)*height*e.detail.min*100 + '%';
+          break;
+      }
+    });
+  </script>
+
+
+</body></html>
