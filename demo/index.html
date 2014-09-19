@@ -17,10 +17,14 @@
   <header>
     <div class="container">
 
-      <h1>GripScroll.js</h1>
+      <h1 class="text-center">GripScroll.js</h1>
       <h2>A decoupled scrollbar with end-grips, zooming, and an event API for custom coupling with your target element.</h2>
       <a href="https://github.com/ansonkao/GripScroll.js">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+        <img style="position: absolute; top: 0; right: 0; border: 0;"
+             src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67"
+             alt="Fork me on GitHub"
+             data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
+        >
       </a>
 
     </div>
@@ -32,6 +36,27 @@
       <div id="target" class="gripscroll">
         <img id="background" src="fractal_design.jpg" style="height: 100%; top: 0%;">
       </div>
+
+      <h3>Overview</h3>
+      <p>This plugin is still <em>super new</em>. More to come soon!</p>
+      <ul>
+        <li>
+          <img src="end-grip-resize.png" alt="End-grip Resizing" />
+          End-grips for precise windowing
+        </li>
+        <li>
+          <img src="checkmark.png" alt="Checkmark!" />
+          Tested in Chrome
+        </li>
+        <li>
+          <img src="coming-soon.png" alt="Coming Soon!" />
+          Event API documentation
+        </li>
+        <li>
+          <img src="coming-soon.png" alt="Coming Soon!" />
+          jQuery compatibility
+        </li>
+      </ul>
       
       <h3>Usage</h3>
       <p>Add GripScroll to your target container:</p>
@@ -49,14 +74,23 @@ target.addEventListener('gripscroll-update', function(e){
 });
       </code></pre>
 
+      <p>TODO: Add event API documentation</p>
+
+      <h3>Contribute</h3>
+      <p>
+        I'm working on this as part of my ongoing effort to build browser-based music production software.
+        Haven't decided on an opensource license for GripScroll yet, but contributions are welcome! Check me out at <a href="http://www.ansonkao.com/blog/">http://www.ansonkao.com/</a>
+      </p>
+
       <iframe src="http://ghbtns.com/github-btn.html?user=ansonkao&amp;repo=GripScroll.js&amp;type=watch&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="80" height="20"></iframe>
+      <iframe src="http://ghbtns.com/github-btn.html?user=ansonkao&amp;repo=GripScroll.js&amp;type=follow&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="180" height="20"></iframe>
 
     </div>
   </main>
 
   <style>
     body {
-      margin: 0;
+      margin: 0 0 60px;
       padding: 0;
       font-family: arial, sans-serif;
       font-size: 13px;
@@ -64,7 +98,7 @@ target.addEventListener('gripscroll-update', function(e){
       background-color: #DDDDFF;
     }
     header {
-      border-top: 10px solid #66A;
+      border-top: 6px solid #66A;
       padding: 30px 0 60px;
       background-color: #CCE;
       margin-bottom: -30px;
@@ -72,7 +106,6 @@ target.addEventListener('gripscroll-update', function(e){
     h1 {
       font-size: 36px;
       letter-spacing: -2px;
-      text-align: center;
       color: #448;
       margin: 0 0 10px;
     }
@@ -85,10 +118,27 @@ target.addEventListener('gripscroll-update', function(e){
       font-size: 24px;
       letter-spacing: -1px;
       color: #448;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #66A;
       margin: 20px 0 10px;
     }
     p {
       margin: 0 0 5px;
+      line-height: 20px;
+    }
+    ul {
+      padding-left: 0;
+    }
+    li {
+      list-style: none;
+      font-size: 16px;
+    }
+    li img {
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+    .text-center {
+      text-align: center;
     }
     .container {
       max-width: 480px;
@@ -99,9 +149,7 @@ target.addEventListener('gripscroll-update', function(e){
       margin: auto;
       border: 1px solid #888;
       width: 100%;
-      height: 100%;
-      max-width: 480px;
-      max-height: 270px;
+      height: 270px;
       box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
       position: relative;
       overflow: hidden;
