@@ -133,13 +133,10 @@ GripScroll = (function(){
          || newMax != this.oldDrawModel.max
         )
         {
-          var eventData = { detail:
-                            { min: newMin
-                            , max: newMax
-                            , direction: this.direction
-                            }
-                          };
-          var event = new CustomEvent('gripscroll-update', eventData);
+          var event = new CustomEvent('gripscroll-update');
+              event.min = newMin;
+              event.max = newMax;
+              event.direction = this.direction
           container.dispatchEvent(event);
         }
 

@@ -49,6 +49,10 @@
           Tested in Chrome
         </li>
         <li>
+          <img src="checkmark.png" alt="Checkmark!" />
+          Tested in FireFox
+        </li>
+        <li>
           <img src="coming-soon.png" alt="Coming Soon!" />
           Event API documentation
         </li>
@@ -78,8 +82,9 @@ target.addEventListener('gripscroll-update', function(e){
 
       <h3>Contribute</h3>
       <p>
-        I'm working on this as part of my ongoing effort to build browser-based music production software.
-        Haven't decided on an opensource license for GripScroll yet, but contributions are welcome! Check me out at <a href="http://www.ansonkao.com/blog/">http://www.ansonkao.com/</a>
+        Haven't decided on an opensource license for GripScroll yet, but contributions are welcome!
+        This is part of my ongoing effort to build browser-based music production software.
+        Check me out at <a href="http://www.ansonkao.com/blog/">http://www.ansonkao.com/</a>
       </p>
 
       <iframe src="http://ghbtns.com/github-btn.html?user=ansonkao&amp;repo=GripScroll.js&amp;type=watch&amp;count=true&amp;size=small" allowtransparency="true" frameborder="0" scrolling="0" width="80" height="20"></iframe>
@@ -120,7 +125,7 @@ target.addEventListener('gripscroll-update', function(e){
       color: #448;
       padding-bottom: 5px;
       border-bottom: 1px solid #66A;
-      margin: 20px 0 10px;
+      margin: 30px 0 10px;
     }
     p {
       margin: 0 0 5px;
@@ -179,17 +184,17 @@ target.addEventListener('gripscroll-update', function(e){
     // Pan and zoom the background image
     var background = document.getElementById('background');
     target.addEventListener('gripscroll-update', function(e){
-      switch( e.detail.direction )
+      switch( e.direction )
       {
         case 'x':
-          var width = 1/(e.detail.max - e.detail.min);
+          var width = 1/(e.max - e.min);
           background.style.width  = width*100 + '%';
-          background.style.left = (-1)*width*e.detail.min*100 + '%';
+          background.style.left = (-1)*width*e.min*100 + '%';
           break;
         case 'y':
-          var height = 1/(e.detail.max - e.detail.min);
+          var height = 1/(e.max - e.min);
           background.style.height = height*100 + '%';
-          background.style.top  = (-1)*height*e.detail.min*100 + '%';
+          background.style.top  = (-1)*height*e.min*100 + '%';
           break;
       }
     });

@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     uglify: {
       dev: {
         files: {
-          "GripScroll.js": "js/*.js"
+          "dist/GripScroll.js": "js/*.js"
         },
         options: {
           beautify: true,

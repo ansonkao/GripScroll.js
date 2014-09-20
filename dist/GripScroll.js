@@ -16,7 +16,7 @@ var CurseWords = function() {
         }), classes.push("curse-words-" + newCursor), body.className = classes.join(" ");
     };
     return document.addEventListener("mouseover", function(e) {
-        for (var i = 0; i < targets.length; i++) if (e.toElement == targets[i]) return null != currentTarget && exitHandlers[currentTarget](e), 
+        for (var i = 0; i < targets.length; i++) if (e.target == targets[i]) return null != currentTarget && exitHandlers[currentTarget](e), 
         currentTarget = i, void enterHandlers[currentTarget](e);
         null != currentTarget && exitHandlers[currentTarget](e), currentImplicitCursor = "default", 
         drawCursor(), currentTarget = null;
@@ -101,14 +101,8 @@ GripScroll = function() {
                     this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
                 }
                 if (newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max) {
-                    var eventData = {
-                        detail: {
-                            min: newMin,
-                            max: newMax,
-                            direction: this.direction
-                        }
-                    }, event = new CustomEvent("gripscroll-update", eventData);
-                    container.dispatchEvent(event);
+                    var event = new CustomEvent("gripscroll-update");
+                    event.min = newMin, event.max = newMax, event.direction = this.direction, container.dispatchEvent(event);
                 }
                 this.wasHovering = this.isHovering, this.wasDragging = this.isDragging, this.oldDrawModel.min = newMin, 
                 this.oldDrawModel.max = newMax;

@@ -67,7 +67,7 @@ var CurseWords = (function(){
   document.addEventListener('mouseover', function(e){
     for( var i = 0; i < targets.length; i++ )
     {
-      if( e.toElement == targets[i] )
+      if( e.target == targets[i] )
       {
         // invoke exitHandler from previous target
         if( currentTarget != null )
