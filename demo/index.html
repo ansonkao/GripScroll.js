@@ -39,7 +39,7 @@
 
       <h3>Overview</h3>
       <p>This plugin is still <em>super new</em>. More to come soon!</p>
-      <ul>
+      <ul class="feature-list">
         <li>
           <img src="end-grip-resize.png" alt="End-grip Resizing" />
           End-grips for precise windowing
@@ -54,7 +54,7 @@
         </li>
         <li>
           <img src="coming-soon.png" alt="Coming Soon!" />
-          Event API documentation
+          Mousewheel Scrolling / Zooming
         </li>
         <li>
           <img src="coming-soon.png" alt="Coming Soon!" />
@@ -70,7 +70,7 @@ var target = document.querySelector("#target-container");
 GripScroll.add( target );
       </code></pre>
 
-      <p>Update your target whenever the user interacts with the scrollbar(s):</p>
+      <p>Update your target whenever the user interacts with the scrollbar(s) by listening to the <code>gripscroll-update</code> event:</p>
 
       <pre><code class="syntax-highlight javascript">
 target.addEventListener('gripscroll-update', function(e){
@@ -78,11 +78,16 @@ target.addEventListener('gripscroll-update', function(e){
 });
       </code></pre>
 
-      <p>TODO: Add event API documentation</p>
+      <p>The <code>gripscroll-update</code> has the following parameters:</p>
+      <ul>
+        <li><code>e.min</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.max</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.direction</code> - <code>'x'</code> or <code>'y'</code> to indicate which scrollbar has changed</li>
+      </ul>
 
       <h3>Contribute</h3>
       <p>
-        Haven't decided on an opensource license for GripScroll yet, but contributions are welcome!
+        Haven't decided on an license for GripScroll yet, but contributions are welcome!
         This is part of my ongoing effort to build browser-based music production software.
         Check me out at <a href="http://www.ansonkao.com/blog/">http://www.ansonkao.com/</a>
       </p>
@@ -131,14 +136,14 @@ target.addEventListener('gripscroll-update', function(e){
       margin: 0 0 5px;
       line-height: 20px;
     }
-    ul {
+    ul.feature-list {
       padding-left: 0;
     }
-    li {
+    ul.feature-list li {
       list-style: none;
       font-size: 16px;
     }
-    li img {
+    ul.feature-list li img {
       vertical-align: middle;
       margin-right: 5px;
     }
