@@ -1,0 +1,23 @@
+{
+  "name": "GripScroll",
+  "version": "0.1.0",
+  "homepage": "https://github.com/ansonkao/GripScroll.js",
+  "authors": [
+    "Anson Kao <anson.kao@gmail.com>"
+  ],
+  "description": "A decoupled scrollbar with end-grips, zooming, and an event API for custom coupling with your target element.",
+  "main": "GripScroll.js",
+  "keywords": [
+    "scrollbar",
+    "canvas",
+    "zoom"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
