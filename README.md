@@ -5,6 +5,10 @@ _A decoupled scrollbar with end-grips, zooming, and an event API for custom coup
 GripScroll works by injecting scrollbar(s) into your target container element, and then triggering update events
 whenever the user interacts with the scrollbar(s).
 
++ End-grips for precise windowing
++ Tested in Chrome
++ Tested in FireFox
+
 ## Usage
 
 Add GripScroll to your target container:
@@ -20,9 +24,13 @@ target.addEventListener('gripscroll-update', function(e){
 });
 ```
 
+The gripscroll-update has the following parameters:
++ `e.min` - a decimal value between `0.000` and `1.000`
++ `e.max` - a decimal value between `0.000` and `1.000`
++ `e.direction` - `"x"` or `"y"` to indicate which scrollbar has changed
+
 ## TODO
 + [Live demo](GripScroll.html)
-+ Event API documentation
 + jQuery compatibility
 + Mousewheel scroll/zoom support 
 + Options+documentation
@@ -31,5 +39,5 @@ target.addEventListener('gripscroll-update', function(e){
 
 * * *
 
-Copyright 2014 Anson Kao
+Copyright 2014 Anson Kao (MIT)
 http://www.ansonkao.com/
