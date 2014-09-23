@@ -8,7 +8,7 @@ module.exports = function(grunt) {
     less: {
       dev: {
         files: {
-          "GripScroll.css": "less/*.less"
+          "dist/GripScroll.css": "less/*.less"
         }
       }
     },

@@ -19,7 +19,6 @@ body.curse-words-grabbing {
 .gripscroll {
   position: relative;
   box-sizing: border-box;
-  border-radius: 5px;
 }
 .gripscroll .bar {
   position: absolute;
