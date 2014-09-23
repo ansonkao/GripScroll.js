@@ -2,8 +2,9 @@
 
 _A decoupled scrollbar with end-grips, zooming, and an event API for custom coupling with your target element._
 
-GripScroll works by injecting scrollbar(s) into your target container element, and then triggering update events
-whenever the user interacts with the scrollbar(s).
+GripScroll works by injecting scrollbar(s) into your target container element, 
+and then triggering update events whenever the user interacts with the scrollbar(s).
+See [http://ansonkao.github.io/gripscroll/](http://ansonkao.github.io/gripscroll/)
 
 + End-grips for precise windowing
 + Tested in Chrome
