@@ -52,6 +52,8 @@ GripScroll = (function(){
     this.isDragging    = false;
     this.wasHovering   = null;
     this.wasDragging   = null;
+    this.width         = null;
+    this.height        = null;
     this.model         = { min: 0
                          , max: 1
                          };
@@ -85,11 +87,11 @@ GripScroll = (function(){
         this.oldDrawModel.max = null;
 
         // Refresh the canvas
-        this.draw( this.model.min, this.model.max );
+        this.render( this.model.min, this.model.max );
       };
 
     // Render to the screen with new values (not necessarily persistent ones)
-    this.draw = function (newMin, newMax)
+    this.render = function (newMin, newMax)
       {
         if( ! newMin && newMin !== 0 )  // No arguments - just draw the current model
         {
@@ -244,7 +246,7 @@ GripScroll = (function(){
         // Cursor was dragged too far - revert to starting point
         if( whichGrip && this.isOutsideDragZone(e) )
         {
-          this.draw( this.model );
+          this.render( this.model );
           return null;
         }
 
@@ -253,7 +255,7 @@ GripScroll = (function(){
         {
           var newPosition = this.calculateCursorPosition(e);
           var newModel = this.validateBothEndPositions(newPosition - startPosition);
-          this.draw( newModel );
+          this.render( newModel );
           return newModel;
         }
 
@@ -266,7 +268,7 @@ GripScroll = (function(){
           var newModel = {};
               newModel[whichGrip] = newPosition;
               newModel[otherGrip] = this.model[otherGrip];
-          this.draw( newModel );
+          this.render( newModel );
           return newModel;
         }
 
@@ -337,7 +339,7 @@ GripScroll = (function(){
       // enterHandler
       function(e){
         that.isHovering = true;
-        that.draw();
+        that.render();
       },
       // hoverHandler
       function(e)
@@ -352,17 +354,17 @@ GripScroll = (function(){
           case 'mid': that.isHovering =  true; newCursor = 'grab'; break;
              default: that.isHovering = false; newCursor = 'default';
         }
-        that.draw();
+        that.render();
         return newCursor;
       },
       // exitHandler
       function(e){
         that.isHovering = false;
-        that.draw();
+        that.render();
       }
     );
   }
-  // ==========================================================================
+  //
   // End of Scrollbar definition
   // ==========================================================================
 

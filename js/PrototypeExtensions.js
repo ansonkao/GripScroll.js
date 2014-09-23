@@ -24,7 +24,7 @@ MouseEvent.prototype.clientXYDirectional =
     default:
       return null;
   }
-}
+};
 
 // ============================================================================
 // DOM ELEMENT EXTENSIONS
@@ -52,7 +52,7 @@ Element.prototype.offsetDirectional =
     default:
       return null;
   }
-}
+};
 
 // Same as event.clientX or event.clientY but with direction (+x, -x, +y, -y) specifiable and for elements
 Element.prototype.clientXYDirectional =
@@ -78,7 +78,7 @@ Element.prototype.clientXYDirectional =
     default:
       return null;
   }
-}
+};
 
 // Same as element.clientWidth or element.clientHeight but with axes specifiable (width, height)
 Element.prototype.clientLength =
@@ -91,7 +91,7 @@ Element.prototype.clientLength =
     case 'x': return rect.width;
     case 'y': return rect.height;
   }
-}
+};
 
 // ============================================================================
 // CANVAS EXTENSIONS
