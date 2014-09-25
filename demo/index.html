@@ -207,7 +207,7 @@ target.addEventListener('gripscroll-update', function(e){
   <script>
     // GripScroll
     var target = document.getElementById('target');
-    GripScroll.add( target );
+    GripScroll.add( target, {x1: 0.25, x2: 0.75, y1: 0.25, y2: 0.75} );
 
     // Pan and zoom the background image
     var background = document.getElementById('background');

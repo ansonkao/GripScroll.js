@@ -64,16 +64,17 @@ var CurseWords = function() {
 }();
 
 GripScroll = function() {
-    function Scrollbar(container, direction) {
+    function Scrollbar(container, params) {
         this.canvas = container.appendChild(document.createElement("canvas")), this.canvasContext = this.canvas.getContext("2d"), 
-        this.canvas.className = "bar " + direction, this.direction = direction, this.perpendicular = {
+        this.canvas.className = "bar " + params.direction, this.direction = params.direction, 
+        this.perpendicular = {
             x: "y",
             y: "x"
-        }[direction], this.smallestZoom = .125, this.isHovering = !1, this.isDragging = !1, 
+        }[this.direction], this.smallestZoom = .125, this.isHovering = !1, this.isDragging = !1, 
         this.wasHovering = null, this.wasDragging = null, this.width = null, this.height = null, 
         this.model = {
-            min: 0,
-            max: 1
+            min: params.min || 0,
+            max: params.max || 1
         }, this.oldDrawModel = {
             min: null,
             max: null
@@ -201,11 +202,20 @@ GripScroll = function() {
             that.isHovering = !1, that.render();
         });
     }
-    var containerStack = [], scrollbarStack = [], add = function(container) {
+    var containerStack = [], scrollbarStack = [], add = function(container, params) {
+        params = params || {};
         for (var i = 0; i < containerStack.length; i++) if (containerStack[i] == container) return;
         containerStack.push(container), scrollbarStack.push({
-            x: new Scrollbar(container, "x"),
-            y: new Scrollbar(container, "y")
+            x: new Scrollbar(container, {
+                direction: "x",
+                min: params.x1 || 0,
+                max: params.x2 || 1
+            }),
+            y: new Scrollbar(container, {
+                direction: "y",
+                min: params.y1 || 0,
+                max: params.y2 || 1
+            })
         });
     };
     return {

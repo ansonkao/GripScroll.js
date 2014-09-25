@@ -8,8 +8,10 @@ GripScroll = (function(){
 
   /* Initializes a new GripScroll around the specified container
    */
-  var add = function(container, options)
+  var add = function(container, params)
     {
+      params = params || {};
+
       // If this container was already added previously, skip
       for( var i = 0; i < containerStack.length; i++ )
       {
@@ -20,8 +22,8 @@ GripScroll = (function(){
       // Okay let's add it
       containerStack.push( container );
       scrollbarStack.push(
-          { x: new Scrollbar( container, 'x' )
-          , y: new Scrollbar( container, 'y' )
+          { x: new Scrollbar( container, { direction: 'x', min: params.x1 || 0.000, max: params.x2 || 1.000 } )
+          , y: new Scrollbar( container, { direction: 'y', min: params.y1 || 0.000, max: params.y2 || 1.000 } )
           }
         );
     };
@@ -34,7 +36,7 @@ GripScroll = (function(){
    * - max, which resizes the end of the scrollbar closer to 100% limit
    * - mid, which drags the entire scrollbar between either limit
    */
-  function Scrollbar(container, direction)
+  function Scrollbar(container, params)
   {
     // ------------------------------------------------------------------------
     // Members
@@ -42,11 +44,11 @@ GripScroll = (function(){
     // DOM element references
     this.canvas        = container.appendChild( document.createElement('canvas') );
     this.canvasContext = this.canvas.getContext("2d");
-    this.canvas.className = 'bar '+direction;
+    this.canvas.className = 'bar '+params.direction;
       
     // Model
-    this.direction     = direction;
-    this.perpendicular = ({x:'y', y:'x'})[direction];
+    this.direction     = params.direction;
+    this.perpendicular = ({x:'y', y:'x'})[this.direction];
     this.smallestZoom  = 0.125;
     this.isHovering    = false;
     this.isDragging    = false;
@@ -54,8 +56,8 @@ GripScroll = (function(){
     this.wasDragging   = null;
     this.width         = null;
     this.height        = null;
-    this.model         = { min: 0
-                         , max: 1
+    this.model         = { min: params.min || 0.000
+                         , max: params.max || 1.000
                          };
     this.oldDrawModel  = { min: null
                          , max: null
@@ -296,7 +298,9 @@ GripScroll = (function(){
       that.init();
     });
 
+    // ------------------------------------------------------------------------
     // Drag and Drop of grips
+    // ------------------------------------------------------------------------
     var whichGrip = null;
     var startPosition = null;
     DragKing.addHandler(
@@ -332,7 +336,9 @@ GripScroll = (function(){
       }
     );
 
+    // ------------------------------------------------------------------------
     // Hovering / Cursor management
+    // ------------------------------------------------------------------------
     CurseWords.addImplicitCursorHandler(
       // targetElement
       that.canvas,
