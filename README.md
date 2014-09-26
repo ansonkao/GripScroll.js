@@ -9,12 +9,22 @@ See the [Demo](http://ansonkao.github.io/gripscroll/).
 + End-grips for precise windowing
 + Tested in Chrome
 + Tested in FireFox
++ Tested in Safari
++ [COMING SOON] jQuery compatibility
++ [COMING SOON] Mousewheel scroll/zoom support 
 
 ## Usage
 
+Setup a target container:
+``` html
+<div id="target-container">
+  ...
+</div>
+```
+
 Add GripScroll to your target container:
 ``` js
-var target = document.querySelector("#target-container");
+var target = document.querySelector("#target");
 GripScroll.add( target );
 ```
 
@@ -25,20 +35,33 @@ target.addEventListener('gripscroll-update', function(e){
 });
 ```
 
-The gripscroll-update has the following parameters:
-+ `e.min` - a decimal value between `0.000` and `1.000`
-+ `e.max` - a decimal value between `0.000` and `1.000`
-+ `e.direction` - `"x"` or `"y"` to indicate which scrollbar has changed
+The `gripscroll-update` event has the following parameters:
++ `e.gripScrollX.min` - a decimal value between `0.000` and `1.000`
++ `e.gripScrollX.max` - a decimal value between `0.000` and `1.000`
++ `e.gripScrollY.min` - a decimal value between `0.000` and `1.000`
++ `e.gripScrollY.max` - a decimal value between `0.000` and `1.000`
 
-## TODO
-+ [Live demo](GripScroll.html)
-+ jQuery compatibility
-+ Mousewheel scroll/zoom support 
-+ Options+documentation
-+ Promotion
-+ Blog post...
+You can also listen to individual scrollbars:
+``` js
+target.addEventListener('gripscroll-update-x', function(e){
+  // Your horizontal update code here...
+});
+
+target.addEventListener('gripscroll-update-y', function(e){
+  // Your vertical update code here...
+});
+```
+
+Individual scrollbar events have the following parameters:
++ `e.gripScrollMin` - a decimal value between `0.000` and `1.000`
++ `e.gripScrollMax` - a decimal value between `0.000` and `1.000`
+
+## Contribute
+Contributions are welcome!
+This is part of my ongoing effort to build browser-based music production software.
+Check me out at [http://www.ansonkao.com/](http://www.ansonkao.com/) + more to come.
 
 * * *
 
-Copyright 2014 Anson Kao (MIT)
+Copyright 2014 Anson Kao (MIT Licensed)
 http://www.ansonkao.com/

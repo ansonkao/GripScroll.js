@@ -5,8 +5,8 @@
 
   <link rel="stylesheet" href="../dist/GripScroll.css">
   <link rel="icon" type="img/ico" href="favicon.ico">
-  <link rel="stylesheet" href="demo.css">
   <link rel="stylesheet" href="http://yandex.st/highlightjs/7.5/styles/github.min.css?ver=3.6.1">
+  <link rel="stylesheet" href="demo.css">
   <script type="text/javascript" src="http://yandex.st/highlightjs/7.5/highlight.min.js"></script>
   <script type="text/javascript">
     hljs.initHighlightingOnLoad();
@@ -34,7 +34,7 @@
   <main>
     <div class="container">
 
-      <div id="target" class="gripscroll">
+      <div id="target">
         <img id="background" src="fractal_design.jpg" style="height: 100%; top: 0%;">
       </div>
 
@@ -71,10 +71,10 @@
       </ul>
       
       <h3>Usage</h3>
-      <p>Setup a target container with the <code>.gripscroll</code> class:</p>
+      <p>Setup a target container:</p>
 
       <pre><code class="syntax-highlight xml">
-&lt;div id="target" class="gripscroll"&gt;
+&lt;div id="target-container"&gt;
   ...
 &lt;/div&gt;
       </code></pre>
@@ -94,11 +94,30 @@ target.addEventListener('gripscroll-update', function(e){
 });
       </code></pre>
 
-      <p>The <code>gripscroll-update</code> has the following parameters:</p>
+      <p>The <code>gripscroll-update</code> event has the following parameters:</p>
       <ul>
-        <li><code>e.min</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
-        <li><code>e.max</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
-        <li><code>e.direction</code> - <code>'x'</code> or <code>'y'</code> to indicate which scrollbar has changed</li>
+        <li><code>e.gripScrollX.min</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.gripScrollX.max</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.gripScrollY.min</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.gripScrollY.max</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+      </ul>
+
+      <p>You can also listen to individual scrollbars:</p>
+
+      <pre><code class="syntax-highlight javascript">
+target.addEventListener('gripscroll-update-x', function(e){
+  // Your horizontal update code here...
+});
+
+target.addEventListener('gripscroll-update-y', function(e){
+  // Your vertical update code here...
+});
+      </code></pre>
+
+      <p>Individual scrollbar events have the following parameters:</p>
+      <ul>
+        <li><code>e.gripScrollMin</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
+        <li><code>e.gripScrollMax</code> - a decimal value between <code>0.000</code> and <code>1.000</code></li>
       </ul>
 
       <h3>Contribute</h3>
@@ -118,7 +137,7 @@ target.addEventListener('gripscroll-update', function(e){
       </p>
 
       <p>
-        Copyright &copy; 2014 Anson Kao (<a href="http://opensource.org/licenses/MIT">MIT License</a>).
+        Copyright &copy; 2014 Anson Kao (<a href="http://opensource.org/licenses/MIT">MIT Licensed</a>).
       </p>
 
     </div>
@@ -128,26 +147,27 @@ target.addEventListener('gripscroll-update', function(e){
   <script>
     var target = document.getElementById('target');
 
-    // Pan and zoom the background image
+    // GripScroll
+    var params = 
+      { x: {min: 0.25, max: 0.75}
+      , y: {min: 0.25, max: 0.75}
+      };
+    GripScroll.add( target, params );
+
+    // Pan and zoom the background image as per the gripscroll!
     var background = document.getElementById('background');
     target.addEventListener('gripscroll-update', function(e){
-      switch( e.direction )
-      {
-        case 'x':
-          var width = 1/(e.max - e.min);
-          background.style.width  = width*100 + '%';
-          background.style.left = (-1)*width*e.min*100 + '%';
-          break;
-        case 'y':
-          var height = 1/(e.max - e.min);
-          background.style.height = height*100 + '%';
-          background.style.top  = (-1)*height*e.min*100 + '%';
-          break;
-      }
+      // Update X-axis
+      var width = 1/(e.gripScrollX.max - e.gripScrollX.min);
+      background.style.width  = width*100 + '%';
+      background.style.left = (-1)*width*e.gripScrollX.min*100 + '%';
+      // Update Y-axis
+      var height = 1/(e.gripScrollY.max - e.gripScrollY.min);
+      background.style.height = height*100 + '%';
+      background.style.top  = (-1)*height*e.gripScrollY.min*100 + '%';
     });
     
-    // GripScroll
-    GripScroll.add( target, {x1: 0.25, x2: 0.75, y1: 0.25, y2: 0.75} );
+    GripScroll.triggerUpdate( target );
   </script>
 
 </body>

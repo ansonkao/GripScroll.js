@@ -65,9 +65,9 @@ var CurseWords = function() {
 
 GripScroll = function() {
     function Scrollbar(container, params) {
-        this.canvas = container.appendChild(document.createElement("canvas")), this.canvasContext = this.canvas.getContext("2d"), 
-        this.canvas.className = "bar " + params.direction, this.direction = params.direction, 
-        this.perpendicular = {
+        this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
+        this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + params.direction, 
+        this.direction = params.direction, this.perpendicular = {
             x: "y",
             y: "x"
         }[this.direction], this.smallestZoom = .125, this.isHovering = !1, this.isDragging = !1, 
@@ -78,108 +78,25 @@ GripScroll = function() {
         }, this.oldDrawModel = {
             min: null,
             max: null
-        }, this.init = function() {
-            switch (this.direction) {
-              case "x":
-                this.canvas.width = this.width = container.clientWidth - 20, this.canvas.height = this.height = 10;
-                break;
-
-              case "y":
-                this.canvas.width = this.width = 10, this.canvas.height = this.height = container.clientHeight - 20;
-            }
-            this.wasHovering = null, this.wasDragging = null, this.oldDrawModel.min = null, 
-            this.oldDrawModel.max = null, this.render(this.model.min, this.model.max);
-        }, this.render = function(newMin, newMax) {
-            if (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
-            newMax = this.model.max), newMin != this.oldDrawModel.min || this.wasHovering != this.isHovering || newMax != this.oldDrawModel.max || this.wasDragging != this.isDragging) {
-                switch (this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
-                this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
-                this.direction) {
-                  case "x":
-                    this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
-                    break;
-
-                  case "y":
-                    this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
-                }
-                if (newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max) {
-                    var event = new CustomEvent("gripscroll-update");
-                    event.min = newMin, event.max = newMax, event.direction = this.direction, container.dispatchEvent(event);
-                }
-                this.wasHovering = this.isHovering, this.wasDragging = this.isDragging, this.oldDrawModel.min = newMin, 
-                this.oldDrawModel.max = newMax;
-            }
-        }, this.save = function(newValue, minOrMax) {
-            this.model[minOrMax] = newValue;
-        }, this.calculateCursorPosition = function(e) {
-            var offset = this.canvas.clientXYDirectional(this.direction), mousePixels = e.clientXYDirectional(this.direction), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
-            return newPosition;
-        }, this.whichGrip = function(cursorPosition) {
-            return Math.abs(cursorPosition - this.model.min) < this.pxToPct(5) ? "min" : Math.abs(cursorPosition - this.model.max) < this.pxToPct(5) ? "max" : cursorPosition > this.model.min && cursorPosition < this.model.max ? "mid" : null;
-        }, this.isOutsideDragZone = function(e) {
-            var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
-            return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
-        }, this.validateEndPosition = function(newPosition, minOrMax) {
-            switch (minOrMax) {
-              case "min":
-                0 > newPosition ? newPosition = 0 : newPosition > this.model.max - this.smallestZoom && (newPosition = this.model.max - this.smallestZoom);
-                break;
-
-              case "max":
-                newPosition > 1 ? newPosition = 1 : newPosition < this.model.min + this.smallestZoom && (newPosition = this.model.min + this.smallestZoom);
-            }
-            return newPosition;
-        }, this.validateBothEndPositions = function(changePosition) {
-            var newMin = this.model.min + changePosition;
-            0 > newMin && (changePosition -= newMin);
-            var newMax = this.model.max + changePosition;
-            newMax > 1 && (changePosition -= newMax - 1);
-            var newModel = {};
-            return newModel.min = changePosition + this.model.min, newModel.max = changePosition + this.model.max, 
-            newModel;
-        }, this.recalculateModel = function(e, whichGrip, startPosition) {
-            if (whichGrip && this.isOutsideDragZone(e)) return this.render(this.model), null;
-            if ("mid" == whichGrip) {
-                var newPosition = this.calculateCursorPosition(e), newModel = this.validateBothEndPositions(newPosition - startPosition);
-                return this.render(newModel), newModel;
-            }
-            if ("min" == whichGrip || "max" == whichGrip) {
-                var newPosition = this.calculateCursorPosition(e);
-                newPosition = this.validateEndPosition(newPosition, whichGrip);
-                var otherGrip = {
-                    min: "max",
-                    max: "min"
-                }[whichGrip], newModel = {};
-                return newModel[whichGrip] = newPosition, newModel[otherGrip] = this.model[otherGrip], 
-                this.render(newModel), newModel;
-            }
-            return null;
-        }, this.pxToPct = function() {
-            switch (this.direction) {
-              case "x":
-                return 5 / this.width;
-
-              case "y":
-                return 5 / this.height;
-            }
         };
         var that = this;
         that.init(), window.addEventListener("resize", function() {
             that.init();
         });
-        var whichGrip = null, startPosition = null;
-        DragKing.addHandler(that.canvas, function(e) {
+        var whichGrip = null, startPosition = null, gripHandler = function(e) {
             that.isDragging = !0, startPosition = that.calculateCursorPosition(e), whichGrip = that.whichGrip(startPosition), 
             "mid" == whichGrip ? CurseWords.setExplicitCursor("grabbing") : whichGrip && CurseWords.setExplicitCursor(that.direction + "resize");
-        }, function(e) {
+        }, dragHandler = function(e) {
             that.recalculateModel(e, whichGrip, startPosition);
-        }, function(e) {
+        }, dropHandler = function(e) {
             that.isDragging = !1, CurseWords.clearExplicitCursor();
             var newModel = that.recalculateModel(e, whichGrip, startPosition);
             newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
-        }), CurseWords.addImplicitCursorHandler(that.canvas, function() {
+        };
+        DragKing.addHandler(that.canvas, gripHandler, dragHandler, dropHandler);
+        var enterHandler = function() {
             that.isHovering = !0, that.render();
-        }, function(e) {
+        }, hoverHandler = function(e) {
             var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition), newCursor = null;
             switch (hoverGrip) {
               case "min":
@@ -198,28 +115,143 @@ GripScroll = function() {
                 that.isHovering = !1, newCursor = "default";
             }
             return that.render(), newCursor;
-        }, function() {
+        }, exitHandler = function() {
             that.isHovering = !1, that.render();
-        });
+        };
+        CurseWords.addImplicitCursorHandler(that.canvas, enterHandler, hoverHandler, exitHandler);
     }
-    var containerStack = [], scrollbarStack = [], add = function(container, params) {
-        params = params || {};
-        for (var i = 0; i < containerStack.length; i++) if (containerStack[i] == container) return;
-        containerStack.push(container), scrollbarStack.push({
-            x: new Scrollbar(container, {
+    var GripScrollStack = [], add = function(container, params) {
+        for (var i = 0; i < GripScrollStack.length; i++) if (GripScrollStack[i].container == container) return !1;
+        return params = validateParams(params), GripScrollStack.push({
+            container: container,
+            x: params.x ? new Scrollbar(container, {
                 direction: "x",
-                min: params.x1 || 0,
-                max: params.x2 || 1
-            }),
-            y: new Scrollbar(container, {
+                min: params.x.min,
+                max: params.x.max
+            }) : null,
+            y: params.y ? new Scrollbar(container, {
                 direction: "y",
-                min: params.y1 || 0,
-                max: params.y2 || 1
-            })
-        });
+                min: params.y.min,
+                max: params.y.max
+            }) : null
+        }), container.classList.add("gripscroll"), params.x && container.addEventListener("gripscroll-update-x", function(e) {
+            triggerUpdate(container, {
+                xMin: e.gripScrollMin,
+                xMax: e.gripScrollMax
+            });
+        }), params.y && container.addEventListener("gripscroll-update-y", function(e) {
+            triggerUpdate(container, {
+                yMin: e.gripScrollMin,
+                yMax: e.gripScrollMax
+            });
+        }), !0;
+    }, validateParams = function(params) {
+        return params || (params = {}), void 0 === params.x ? params.x = {
+            min: 0,
+            max: 1
+        } : params.x && (void 0 === params.x.min && (params.x.min = 0), void 0 === params.x.max && (params.x.max = 1)), 
+        void 0 === params.y ? params.y = {
+            min: 0,
+            max: 1
+        } : params.y && (void 0 === params.y.min && (params.y.min = 0), void 0 === params.y.max && (params.y.max = 1)), 
+        params;
+    }, triggerUpdate = function(container, overrideValues) {
+        for (var i = 0; i < GripScrollStack.length; i++) if (GripScrollStack[i].container == container) var thisGripScroll = GripScrollStack[i];
+        if (!thisGripScroll) return !1;
+        var event = new CustomEvent("gripscroll-update");
+        return event.gripScrollX = {}, event.gripScrollX.min = overrideValues && overrideValues.xMin || thisGripScroll.x && thisGripScroll.x.model.min || null, 
+        event.gripScrollX.max = overrideValues && overrideValues.xMax || thisGripScroll.x && thisGripScroll.x.model.max || null, 
+        event.gripScrollY = {}, event.gripScrollY.min = overrideValues && overrideValues.yMin || thisGripScroll.y && thisGripScroll.y.model.min || null, 
+        event.gripScrollY.max = overrideValues && overrideValues.yMax || thisGripScroll.y && thisGripScroll.y.model.max || null, 
+        container.dispatchEvent(event), !0;
     };
-    return {
-        add: add
+    return Scrollbar.prototype.init = function() {
+        switch (this.direction) {
+          case "x":
+            this.canvas.width = this.width = this.container.clientWidth - 20, this.canvas.height = this.height = 10;
+            break;
+
+          case "y":
+            this.canvas.width = this.width = 10, this.canvas.height = this.height = this.container.clientHeight - 20;
+        }
+        this.wasHovering = null, this.wasDragging = null, this.oldDrawModel.min = null, 
+        this.oldDrawModel.max = null, this.render(this.model.min, this.model.max);
+    }, Scrollbar.prototype.render = function(newMin, newMax) {
+        if (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
+        newMax = this.model.max), newMin != this.oldDrawModel.min || this.wasHovering != this.isHovering || newMax != this.oldDrawModel.max || this.wasDragging != this.isDragging) {
+            switch (this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
+            this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
+            this.direction) {
+              case "x":
+                this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
+                break;
+
+              case "y":
+                this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
+            }
+            if (newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max) {
+                var event = new CustomEvent("gripscroll-update-" + this.direction);
+                event.gripScrollMin = newMin, event.gripScrollMax = newMax, this.container.dispatchEvent(event);
+            }
+            this.wasHovering = this.isHovering, this.wasDragging = this.isDragging, this.oldDrawModel.min = newMin, 
+            this.oldDrawModel.max = newMax;
+        }
+    }, Scrollbar.prototype.save = function(newValue, minOrMax) {
+        this.model[minOrMax] = newValue;
+    }, Scrollbar.prototype.calculateCursorPosition = function(e) {
+        var offset = this.canvas.clientXYDirectional(this.direction), mousePixels = e.clientXYDirectional(this.direction), mouseRange = this.canvas.clientLength(this.direction), newPosition = (mousePixels - offset) / mouseRange;
+        return newPosition;
+    }, Scrollbar.prototype.whichGrip = function(cursorPosition) {
+        return Math.abs(cursorPosition - this.model.min) < this.pxToPct(5) ? "min" : Math.abs(cursorPosition - this.model.max) < this.pxToPct(5) ? "max" : cursorPosition > this.model.min && cursorPosition < this.model.max ? "mid" : null;
+    }, Scrollbar.prototype.isOutsideDragZone = function(e) {
+        var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
+        return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
+    }, Scrollbar.prototype.validateEndPosition = function(newPosition, minOrMax) {
+        switch (minOrMax) {
+          case "min":
+            0 > newPosition ? newPosition = 0 : newPosition > this.model.max - this.smallestZoom && (newPosition = this.model.max - this.smallestZoom);
+            break;
+
+          case "max":
+            newPosition > 1 ? newPosition = 1 : newPosition < this.model.min + this.smallestZoom && (newPosition = this.model.min + this.smallestZoom);
+        }
+        return newPosition;
+    }, Scrollbar.prototype.validateBothEndPositions = function(changePosition) {
+        var newMin = this.model.min + changePosition;
+        0 > newMin && (changePosition -= newMin);
+        var newMax = this.model.max + changePosition;
+        newMax > 1 && (changePosition -= newMax - 1);
+        var newModel = {};
+        return newModel.min = changePosition + this.model.min, newModel.max = changePosition + this.model.max, 
+        newModel;
+    }, Scrollbar.prototype.recalculateModel = function(e, whichGrip, startPosition) {
+        if (whichGrip && this.isOutsideDragZone(e)) return this.render(this.model), null;
+        if ("mid" == whichGrip) {
+            var newPosition = this.calculateCursorPosition(e), newModel = this.validateBothEndPositions(newPosition - startPosition);
+            return this.render(newModel), newModel;
+        }
+        if ("min" == whichGrip || "max" == whichGrip) {
+            var newPosition = this.calculateCursorPosition(e);
+            newPosition = this.validateEndPosition(newPosition, whichGrip);
+            var otherGrip = {
+                min: "max",
+                max: "min"
+            }[whichGrip], newModel = {};
+            return newModel[whichGrip] = newPosition, newModel[otherGrip] = this.model[otherGrip], 
+            this.render(newModel), newModel;
+        }
+        return null;
+    }, Scrollbar.prototype.pxToPct = function() {
+        switch (this.direction) {
+          case "x":
+            return 5 / this.width;
+
+          case "y":
+            return 5 / this.height;
+        }
+    }, {
+        add: add,
+        triggerUpdate: triggerUpdate
     };
 }(), MouseEvent.prototype.clientXYDirectional = MouseEvent.prototype.clientXYDirectional || function(axis, sign) {
     switch (sign = void 0 === sign ? 1 : sign, axis) {
