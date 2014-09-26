@@ -5,6 +5,7 @@
 
   <link rel="stylesheet" href="../dist/GripScroll.css">
   <link rel="icon" type="img/ico" href="favicon.ico">
+  <link rel="stylesheet" href="demo.css">
   <link rel="stylesheet" href="http://yandex.st/highlightjs/7.5/styles/github.min.css?ver=3.6.1">
   <script type="text/javascript" src="http://yandex.st/highlightjs/7.5/highlight.min.js"></script>
   <script type="text/javascript">
@@ -121,9 +122,7 @@ target.addEventListener('gripscroll-update', function(e){
 
   <script src="../dist/GripScroll.js"></script>
   <script>
-    // GripScroll
     var target = document.getElementById('target');
-    GripScroll.add( target, {x1: 0.25, x2: 0.75, y1: 0.25, y2: 0.75} );
 
     // Pan and zoom the background image
     var background = document.getElementById('background');
@@ -142,6 +141,9 @@ target.addEventListener('gripscroll-update', function(e){
           break;
       }
     });
+    
+    // GripScroll
+    GripScroll.add( target, {x1: 0.25, x2: 0.75, y1: 0.25, y2: 0.75} );
   </script>
 
 </body>
