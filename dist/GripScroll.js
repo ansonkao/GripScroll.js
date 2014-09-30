@@ -23,7 +23,8 @@ var CurseWords = function() {
     }), document.addEventListener("mousemove", function(e) {
         if (null != currentTarget) {
             var newCursor = hoverHandlers[currentTarget](e);
-            newCursor != currentImplicitCursor && (currentImplicitCursor = newCursor, drawCursor());
+            newCursor && newCursor != currentImplicitCursor && (currentImplicitCursor = newCursor, 
+            drawCursor());
         }
     }), {
         addImplicitCursorHandler: addImplicitCursorHandler,

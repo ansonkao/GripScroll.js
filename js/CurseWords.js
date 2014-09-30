@@ -92,7 +92,7 @@ var CurseWords = (function(){
     if( currentTarget != null )
     {
       var newCursor = hoverHandlers[currentTarget](e);
-      if( newCursor != currentImplicitCursor )
+      if( newCursor && newCursor != currentImplicitCursor )
       {
         currentImplicitCursor = newCursor;
         drawCursor();
