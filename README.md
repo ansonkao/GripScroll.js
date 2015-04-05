@@ -7,13 +7,19 @@ and then triggering update events whenever the user interacts with the scrollbar
 See the [Demo](http://ansonkao.github.io/gripscroll/).
 
 + End-grips for precise windowing
++ Mousewheel scroll/zoom support 
 + Tested in Chrome
 + Tested in FireFox
 + Tested in Safari
 + [COMING SOON] jQuery compatibility
-+ [COMING SOON] Mousewheel scroll/zoom support 
 
 ## Usage
+Include keymaster.js (the only dependency, see [keymaster](https://github.com/madrobby/keymaster)) and then GripScroll.js.
+Available on bower as `keymaster` and `gripscroll`
+``` html
+<script src="path/to/keymaster.js"></script>
+<script src="path/to/GripScroll.js"></script>
+```
 
 Setup a target container:
 ``` html
