@@ -5,6 +5,14 @@ module.exports = function(grunt) {
 
     pkg: grunt.file.readJSON('package.json'),
 
+    copy: {
+      dev: {
+        files: [
+          {expand: true, cwd: "", src: "bower_components/keymaster/keymaster.js", dest: 'dist/', flatten: true }
+        ]
+      }
+    },
+
     less: {
       dev: {
         files: {
@@ -39,11 +47,12 @@ module.exports = function(grunt) {
   });
 
   // Tasks
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Commands
-  grunt.registerTask('default', ['less', 'uglify']);
+  grunt.registerTask('default', ['copy', 'less', 'uglify', 'watch']);
 
 };

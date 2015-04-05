@@ -1,7 +1,7 @@
 /* GripScroll takes a container and injects scrollbars.
  * One for the x-axis and/or one for the y-axis 
  */
-GripScroll = (function(){
+GripScroll = (function(key){
 
   var GripScrollStack = [];
 
@@ -31,6 +31,27 @@ GripScroll = (function(){
       // Pass on individual scrollbar updates as full gripscroll updates
       if( params.x ) container.addEventListener('gripscroll-update-x', function(e){ triggerUpdate( container, {xMin: e.gripScrollMin, xMax: e.gripScrollMax} ); } );
       if( params.y ) container.addEventListener('gripscroll-update-y', function(e){ triggerUpdate( container, {yMin: e.gripScrollMin, yMax: e.gripScrollMax} ); } );
+
+      // Scrollwheel handling
+      var currentGripScroll = GripScrollStack[ GripScrollStack.length - 1 ];
+      container.addEventListener("wheel", function(e){
+        // Zoom
+        if( key.ctrl )
+        {
+          // Use deltaY for both axes in Zoom
+          currentGripScroll.x.zoomByAmount( e, 'x' );
+          currentGripScroll.y.zoomByAmount( e, 'y' );
+        }
+        // Scroll
+        else
+        {
+          // Use deltaX and deltaY respectively for scrolling
+          currentGripScroll.x.moveByAmount( e.deltaX, 'x' );
+          currentGripScroll.y.moveByAmount( e.deltaY, 'y' );
+        }
+        e.preventDefault();
+      });
+    
 
       return true;
     };
@@ -415,6 +436,25 @@ GripScroll = (function(){
       return null;
     };
 
+  // Attempt to move the scrollbar by a number of pixels
+  Scrollbar.prototype.moveByAmount = function(amount, direction)
+    {
+      var mouseRange = this.canvas.clientLength( direction );
+      var deltaPercent = amount / ( 3 * mouseRange );
+      this.model = this.validateBothEndPositions( deltaPercent );
+      this.render( this.model );
+    };
+
+  // Attempt to zoom the scrollbar by a number of pixels in both upper and lower limits
+  Scrollbar.prototype.zoomByAmount = function(e, direction)
+    {
+      var deltaPercent = e.deltaY * 0.001; // Might need to adjust the 1000x scale depending on hardware...?
+      var zoomTarget = this.calculateCursorPosition(e); // Try to centre the focal point around the cursor
+      this.model.min = this.validateEndPosition(this.model.min + deltaPercent*(0 + 2*zoomTarget), 'min');
+      this.model.max = this.validateEndPosition(this.model.max - deltaPercent*(2 - 2*zoomTarget), 'max');
+      this.render( this.model );
+    };
+
   // Return pixels as percent units
   Scrollbar.prototype.pxToPct = function()
     {
@@ -433,4 +473,4 @@ GripScroll = (function(){
          , triggerUpdate: triggerUpdate
          };
 
-})();
+})(key);

@@ -64,7 +64,7 @@ var CurseWords = function() {
     };
 }();
 
-GripScroll = function() {
+GripScroll = function(key) {
     function Scrollbar(container, params) {
         this.container = container, this.canvas = container.appendChild(document.createElement("canvas")), 
         this.canvasContext = this.canvas.getContext("2d"), this.canvas.className = "bar " + params.direction, 
@@ -81,7 +81,7 @@ GripScroll = function() {
             max: null
         };
         var that = this;
-        that.init(), window.addEventListener("resize", function() {
+        that.init(), window.addEventListener("resize", function(e) {
             that.init();
         });
         var whichGrip = null, startPosition = null, gripHandler = function(e) {
@@ -95,7 +95,7 @@ GripScroll = function() {
             newModel && (that.save(newModel.min, "min"), that.save(newModel.max, "max"));
         };
         DragKing.addHandler(that.canvas, gripHandler, dragHandler, dropHandler);
-        var enterHandler = function() {
+        var enterHandler = function(e) {
             that.isHovering = !0, that.render();
         }, hoverHandler = function(e) {
             var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition), newCursor = null;
@@ -116,14 +116,14 @@ GripScroll = function() {
                 that.isHovering = !1, newCursor = "default";
             }
             return that.render(), newCursor;
-        }, exitHandler = function() {
+        }, exitHandler = function(e) {
             that.isHovering = !1, that.render();
         };
         CurseWords.addImplicitCursorHandler(that.canvas, enterHandler, hoverHandler, exitHandler);
     }
     var GripScrollStack = [], add = function(container, params) {
         for (var i = 0; i < GripScrollStack.length; i++) if (GripScrollStack[i].container == container) return !1;
-        return params = validateParams(params), GripScrollStack.push({
+        params = validateParams(params), GripScrollStack.push({
             container: container,
             x: params.x ? new Scrollbar(container, {
                 direction: "x",
@@ -145,6 +145,11 @@ GripScroll = function() {
                 yMin: e.gripScrollMin,
                 yMax: e.gripScrollMax
             });
+        });
+        var currentGripScroll = GripScrollStack[GripScrollStack.length - 1];
+        return container.addEventListener("wheel", function(e) {
+            key.ctrl ? (currentGripScroll.x.zoomByAmount(e, "x"), currentGripScroll.y.zoomByAmount(e, "y")) : (currentGripScroll.x.moveByAmount(e.deltaX, "x"), 
+            currentGripScroll.y.moveByAmount(e.deltaY, "y")), e.preventDefault();
         }), !0;
     }, validateParams = function(params) {
         return params || (params = {}), void 0 === params.x ? params.x = {
@@ -242,6 +247,14 @@ GripScroll = function() {
             this.render(newModel), newModel;
         }
         return null;
+    }, Scrollbar.prototype.moveByAmount = function(amount, direction) {
+        var mouseRange = this.canvas.clientLength(direction), deltaPercent = amount / (3 * mouseRange);
+        this.model = this.validateBothEndPositions(deltaPercent), this.render(this.model);
+    }, Scrollbar.prototype.zoomByAmount = function(e, direction) {
+        var deltaPercent = .001 * e.deltaY, zoomTarget = this.calculateCursorPosition(e);
+        this.model.min = this.validateEndPosition(this.model.min + deltaPercent * (0 + 2 * zoomTarget), "min"), 
+        this.model.max = this.validateEndPosition(this.model.max - deltaPercent * (2 - 2 * zoomTarget), "max"), 
+        this.render(this.model);
     }, Scrollbar.prototype.pxToPct = function() {
         switch (this.direction) {
           case "x":
@@ -254,7 +267,7 @@ GripScroll = function() {
         add: add,
         triggerUpdate: triggerUpdate
     };
-}(), MouseEvent.prototype.clientXYDirectional = MouseEvent.prototype.clientXYDirectional || function(axis, sign) {
+}(key), MouseEvent.prototype.clientXYDirectional = MouseEvent.prototype.clientXYDirectional || function(axis, sign) {
     switch (sign = void 0 === sign ? 1 : sign, axis) {
       case "x":
         switch (sign > 0) {
