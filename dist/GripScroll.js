@@ -96,7 +96,7 @@ GripScroll = function(key) {
         };
         DragKing.addHandler(that.canvas, gripHandler, dragHandler, dropHandler);
         var enterHandler = function(e) {
-            that.isHovering = !0, that.render();
+            that.isHovering = !0, that.isDragging || that.render();
         }, hoverHandler = function(e) {
             var newPosition = that.calculateCursorPosition(e), hoverGrip = that.whichGrip(newPosition), newCursor = null;
             switch (hoverGrip) {
@@ -115,9 +115,9 @@ GripScroll = function(key) {
               default:
                 that.isHovering = !1, newCursor = "default";
             }
-            return that.render(), newCursor;
+            return that.isDragging || that.render(), newCursor;
         }, exitHandler = function(e) {
-            that.isHovering = !1, that.render();
+            that.isHovering = !1, that.isDragging || that.render();
         };
         CurseWords.addImplicitCursorHandler(that.canvas, enterHandler, hoverHandler, exitHandler);
     }
@@ -165,10 +165,10 @@ GripScroll = function(key) {
         for (var i = 0; i < GripScrollStack.length; i++) if (GripScrollStack[i].container == container) var thisGripScroll = GripScrollStack[i];
         if (!thisGripScroll) return !1;
         var event = new CustomEvent("gripscroll-update");
-        return event.gripScrollX = {}, event.gripScrollX.min = overrideValues && overrideValues.xMin || thisGripScroll.x && thisGripScroll.x.model.min || null, 
-        event.gripScrollX.max = overrideValues && overrideValues.xMax || thisGripScroll.x && thisGripScroll.x.model.max || null, 
-        event.gripScrollY = {}, event.gripScrollY.min = overrideValues && overrideValues.yMin || thisGripScroll.y && thisGripScroll.y.model.min || null, 
-        event.gripScrollY.max = overrideValues && overrideValues.yMax || thisGripScroll.y && thisGripScroll.y.model.max || null, 
+        return event.gripScrollX = {}, event.gripScrollX.min = "object" == typeof overrideValues ? overrideValues.xMin : thisGripScroll.x.model.min, 
+        event.gripScrollX.max = "object" == typeof overrideValues ? overrideValues.xMax : thisGripScroll.x.model.max, 
+        event.gripScrollY = {}, event.gripScrollY.min = "object" == typeof overrideValues ? overrideValues.yMin : thisGripScroll.y.model.min, 
+        event.gripScrollY.max = "object" == typeof overrideValues ? overrideValues.yMax : thisGripScroll.y.model.max, 
         container.dispatchEvent(event), !0;
     };
     return Scrollbar.prototype.init = function() {
@@ -183,8 +183,8 @@ GripScroll = function(key) {
         this.wasHovering = null, this.wasDragging = null, this.oldDrawModel.min = null, 
         this.oldDrawModel.max = null, this.render(this.model.min, this.model.max);
     }, Scrollbar.prototype.render = function(newMin, newMax) {
-        if (newMin || 0 === newMin ? newMax || (newMax = newMin.max, newMin = newMin.min) : (newMin = this.model.min, 
-        newMax = this.model.max), newMin != this.oldDrawModel.min || this.wasHovering != this.isHovering || newMax != this.oldDrawModel.max || this.wasDragging != this.isDragging) {
+        if ("undefined" == typeof newMin ? (newMin = this.model.min, newMax = this.model.max) : "undefined" == typeof newMax && (newMax = newMin.max, 
+        newMin = newMin.min), newMin != this.oldDrawModel.min || this.wasHovering != this.isHovering || newMax != this.oldDrawModel.max || this.wasDragging != this.isDragging) {
             switch (this.canvasContext.clear(), this.isHovering || this.isDragging ? this.canvas.classList.add("is-mouseover") : this.canvas.classList.remove("is-mouseover"), 
             this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
             this.direction) {
@@ -211,7 +211,7 @@ GripScroll = function(key) {
         return Math.abs(cursorPosition - this.model.min) < this.pxToPct(5) ? "min" : Math.abs(cursorPosition - this.model.max) < this.pxToPct(5) ? "max" : cursorPosition > this.model.min && cursorPosition < this.model.max ? "mid" : null;
     }, Scrollbar.prototype.isOutsideDragZone = function(e) {
         var perpendicularOffset = this.canvas.clientXYDirectional(this.perpendicular, 1), perpendicularMousePixels = e.clientXYDirectional(this.perpendicular, 1);
-        return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : void 0;
+        return Math.abs(perpendicularMousePixels - perpendicularOffset) > 150 ? !0 : !1;
     }, Scrollbar.prototype.validateEndPosition = function(newPosition, minOrMax) {
         switch (minOrMax) {
           case "min":

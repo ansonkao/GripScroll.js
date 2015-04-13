@@ -104,11 +104,11 @@ GripScroll = (function(key){
       // It is, now let's trigger the update event!
       var event = new CustomEvent('gripscroll-update');
           event.gripScrollX = {};
-          event.gripScrollX.min = overrideValues && overrideValues.xMin || thisGripScroll.x && thisGripScroll.x.model.min || null;
-          event.gripScrollX.max = overrideValues && overrideValues.xMax || thisGripScroll.x && thisGripScroll.x.model.max || null;
+          event.gripScrollX.min = ( typeof overrideValues === 'object' ) ? overrideValues.xMin : thisGripScroll.x.model.min;
+          event.gripScrollX.max = ( typeof overrideValues === 'object' ) ? overrideValues.xMax : thisGripScroll.x.model.max;
           event.gripScrollY = {};
-          event.gripScrollY.min = overrideValues && overrideValues.yMin || thisGripScroll.y && thisGripScroll.y.model.min || null;
-          event.gripScrollY.max = overrideValues && overrideValues.yMax || thisGripScroll.y && thisGripScroll.y.model.max || null;
+          event.gripScrollY.min = ( typeof overrideValues === 'object' ) ? overrideValues.yMin : thisGripScroll.y.model.min;
+          event.gripScrollY.max = ( typeof overrideValues === 'object' ) ? overrideValues.yMax : thisGripScroll.y.model.max;
       container.dispatchEvent(event);
       return true;
     };
@@ -198,7 +198,8 @@ GripScroll = (function(key){
     var enterHandler = function(e)
       {
         that.isHovering = true;
-        that.render();
+        if( ! that.isDragging )
+          that.render();
       };
     var hoverHandler = function(e)
       {
@@ -212,13 +213,15 @@ GripScroll = (function(key){
           case 'mid': that.isHovering =  true; newCursor = 'grab'; break;
              default: that.isHovering = false; newCursor = 'default';
         }
-        that.render();
+        if( ! that.isDragging )
+          that.render();
         return newCursor;
       };
     var exitHandler = function(e)
       {
         that.isHovering = false;
-        that.render();
+        if( ! that.isDragging )
+          that.render();
       };
     CurseWords.addImplicitCursorHandler(  that.canvas, enterHandler, hoverHandler, exitHandler );
   }
@@ -255,12 +258,12 @@ GripScroll = (function(key){
   // Render to the screen with new values (not necessarily persistent ones)
   Scrollbar.prototype.render = function (newMin, newMax)
     {
-      if( ! newMin && newMin !== 0 )  // No arguments - just draw the current model
+      if( typeof newMin === "undefined" )  // No arguments - just draw the current model
       {
         newMin = this.model.min;
         newMax = this.model.max;
       }
-      else if( ! newMax )  // No second argument - accept an object of the form {min:AAA, max:BBB} for the first argument
+      else if( typeof newMax === "undefined" )  // No second argument - accept an object of the form {min:AAA, max:BBB} for the first argument
       {
         newMax = newMin['max'];
         newMin = newMin['min'];
@@ -342,12 +345,15 @@ GripScroll = (function(key){
       else                                                                          { return  null; }      
     };
 
+  // Snap back to the previous position if dragging orthogonally too far away from the scrollbar
   Scrollbar.prototype.isOutsideDragZone = function (e)
     {
       var perpendicularOffset = this.canvas.clientXYDirectional( this.perpendicular, +1 );
       var perpendicularMousePixels = e.clientXYDirectional( this.perpendicular, +1 );
       if( Math.abs( perpendicularMousePixels - perpendicularOffset ) > 150 )
         return true;
+
+      return false;
     };
 
   /* Stop at either end or when you trying to drag either end and you are too far zoomed
