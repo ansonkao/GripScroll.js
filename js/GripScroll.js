@@ -18,10 +18,12 @@ GripScroll = (function(key){
 
       // Okay let's add it
       params = validateParams(params);
+      var xParams = { direction: 'x', min: params.x.min, max: params.x.max, smallestZoom: params.smallestZoomX };
+      var yParams = { direction: 'y', min: params.y.min, max: params.y.max, smallestZoom: params.smallestZoomY };
       GripScrollStack.push(
         { container: container
-        , x: params.x ? new Scrollbar( container, {direction: 'x', min: params.x.min, max: params.x.max} ) : null
-        , y: params.y ? new Scrollbar( container, {direction: 'y', min: params.y.min, max: params.y.max} ) : null
+        , x: params.x ? new Scrollbar( container, xParams ) : null
+        , y: params.y ? new Scrollbar( container, yParams ) : null
         }
       );
 
