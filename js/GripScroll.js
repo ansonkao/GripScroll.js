@@ -104,11 +104,11 @@ GripScroll = (function(key){
       // It is, now let's trigger the update event!
       var event = new CustomEvent('gripscroll-update');
           event.gripScrollX = {};
-          event.gripScrollX.min = ( typeof overrideValues === 'object' ) ? overrideValues.xMin : thisGripScroll.x.model.min;
-          event.gripScrollX.max = ( typeof overrideValues === 'object' ) ? overrideValues.xMax : thisGripScroll.x.model.max;
+          event.gripScrollX.min = ( typeof overrideValues === 'object' && overrideValues.xMin ) ? overrideValues.xMin : thisGripScroll.x.model.min;
+          event.gripScrollX.max = ( typeof overrideValues === 'object' && overrideValues.xMax ) ? overrideValues.xMax : thisGripScroll.x.model.max;
           event.gripScrollY = {};
-          event.gripScrollY.min = ( typeof overrideValues === 'object' ) ? overrideValues.yMin : thisGripScroll.y.model.min;
-          event.gripScrollY.max = ( typeof overrideValues === 'object' ) ? overrideValues.yMax : thisGripScroll.y.model.max;
+          event.gripScrollY.min = ( typeof overrideValues === 'object' && overrideValues.yMin ) ? overrideValues.yMin : thisGripScroll.y.model.min;
+          event.gripScrollY.max = ( typeof overrideValues === 'object' && overrideValues.yMax ) ? overrideValues.yMax : thisGripScroll.y.model.max;
       container.dispatchEvent(event);
       return true;
     };

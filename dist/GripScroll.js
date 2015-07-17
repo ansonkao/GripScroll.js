@@ -165,10 +165,10 @@ GripScroll = function(key) {
         for (var i = 0; i < GripScrollStack.length; i++) if (GripScrollStack[i].container == container) var thisGripScroll = GripScrollStack[i];
         if (!thisGripScroll) return !1;
         var event = new CustomEvent("gripscroll-update");
-        return event.gripScrollX = {}, event.gripScrollX.min = "object" == typeof overrideValues ? overrideValues.xMin : thisGripScroll.x.model.min, 
-        event.gripScrollX.max = "object" == typeof overrideValues ? overrideValues.xMax : thisGripScroll.x.model.max, 
-        event.gripScrollY = {}, event.gripScrollY.min = "object" == typeof overrideValues ? overrideValues.yMin : thisGripScroll.y.model.min, 
-        event.gripScrollY.max = "object" == typeof overrideValues ? overrideValues.yMax : thisGripScroll.y.model.max, 
+        return event.gripScrollX = {}, event.gripScrollX.min = "object" == typeof overrideValues && overrideValues.xMin ? overrideValues.xMin : thisGripScroll.x.model.min, 
+        event.gripScrollX.max = "object" == typeof overrideValues && overrideValues.xMax ? overrideValues.xMax : thisGripScroll.x.model.max, 
+        event.gripScrollY = {}, event.gripScrollY.min = "object" == typeof overrideValues && overrideValues.yMin ? overrideValues.yMin : thisGripScroll.y.model.min, 
+        event.gripScrollY.max = "object" == typeof overrideValues && overrideValues.yMax ? overrideValues.yMax : thisGripScroll.y.model.max, 
         container.dispatchEvent(event), !0;
     };
     return Scrollbar.prototype.init = function() {
