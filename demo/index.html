@@ -93,7 +93,17 @@
 
       <pre><code class="syntax-highlight javascript">
 var target = document.querySelector("#target-container");
-GripScroll.add( target );
+GripScroll.add( target, options );
+      </code></pre>
+
+      <p>...where <code>options</code> is an object with the following defaults:</p>
+
+      <pre><code class="syntax-highlight javascript">
+var options = {
+  x: {min: 0.0, max: 1.0},  // Start position for horizontal scrollbar
+  y: {min: 0.0, max: 1.0},  // Start position for vertical scrollbar
+  smallestZoom: 0.125
+}
       </code></pre>
 
       <p>Update your target whenever the user interacts with the scrollbar(s) by listening to the <code>gripscroll-update</code> event:</p>

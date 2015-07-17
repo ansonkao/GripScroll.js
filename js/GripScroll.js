@@ -135,7 +135,7 @@ GripScroll = (function(key){
     // Model
     this.direction     = params.direction;
     this.perpendicular = ({x:'y', y:'x'})[this.direction];
-    this.smallestZoom  = 0.125;
+    this.smallestZoom  = params.smallestZoom || 0.125;
     this.isHovering    = false;
     this.isDragging    = false;
     this.wasHovering   = null;
