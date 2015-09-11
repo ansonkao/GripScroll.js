@@ -142,6 +142,7 @@ GripScroll = (function(key){
     this.isDragging    = false;
     this.wasHovering   = null;
     this.wasDragging   = null;
+    this.pixelScale    = window.devicePixelRatio || 1;
     this.width         = null;
     this.height        = null;
     this.model         = { min: params.min || 0.000
@@ -238,12 +239,12 @@ GripScroll = (function(key){
       switch( this.direction )
       {
         case 'x':
-          this.canvas.width  = this.width  = this.container.clientWidth  - 20;
-          this.canvas.height = this.height = 10;
+          this.canvas.width  = this.width  = this.pixelScale * (this.container.clientWidth  - 20);
+          this.canvas.height = this.height = this.pixelScale * 10;
           break;
         case 'y':
-          this.canvas.width  = this.width  = 10;
-          this.canvas.height = this.height = this.container.clientHeight - 20;
+          this.canvas.width  = this.width  = this.pixelScale * 10;
+          this.canvas.height = this.height = this.pixelScale * (this.container.clientHeight - 20);
           break;
       }
 
@@ -292,8 +293,8 @@ GripScroll = (function(key){
 
         switch( this.direction )
         {
-          case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5, true, true); break;
-          case 'y': this.canvasContext.roundRect(0, this.height*newMin, this.width, this.height*newMax, 5, true, true); break;
+          case 'x': this.canvasContext.roundRect(this.width*newMin,  0, this.width*newMax, this.height, 5 * this.pixelScale, true, true); break;
+          case 'y': this.canvasContext.roundRect(0, this.height*newMin, this.width, this.height*newMax, 5 * this.pixelScale, true, true); break;
         }
       }
 

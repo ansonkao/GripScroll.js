@@ -72,8 +72,8 @@ GripScroll = function(key) {
             x: "y",
             y: "x"
         }[this.direction], this.smallestZoom = params.smallestZoom || .125, this.isHovering = !1, 
-        this.isDragging = !1, this.wasHovering = null, this.wasDragging = null, this.width = null, 
-        this.height = null, this.model = {
+        this.isDragging = !1, this.wasHovering = null, this.wasDragging = null, this.pixelScale = window.devicePixelRatio || 1, 
+        this.width = null, this.height = null, this.model = {
             min: params.min || 0,
             max: params.max || 1
         }, this.oldDrawModel = {
@@ -178,11 +178,12 @@ GripScroll = function(key) {
     return Scrollbar.prototype.init = function() {
         switch (this.direction) {
           case "x":
-            this.canvas.width = this.width = this.container.clientWidth - 20, this.canvas.height = this.height = 10;
+            this.canvas.width = this.width = this.pixelScale * (this.container.clientWidth - 20), 
+            this.canvas.height = this.height = 10 * this.pixelScale;
             break;
 
           case "y":
-            this.canvas.width = this.width = 10, this.canvas.height = this.height = this.container.clientHeight - 20;
+            this.canvas.width = this.width = 10 * this.pixelScale, this.canvas.height = this.height = this.pixelScale * (this.container.clientHeight - 20);
         }
         this.wasHovering = null, this.wasDragging = null, this.oldDrawModel.min = null, 
         this.oldDrawModel.max = null, this.render(this.model.min, this.model.max);
@@ -193,11 +194,11 @@ GripScroll = function(key) {
             this.canvasContext.strokeStyle = "rgb(64,64,64)", this.canvasContext.fillStyle = "rgb(96,96,96)", 
             this.direction) {
               case "x":
-                this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5, !0, !0);
+                this.canvasContext.roundRect(this.width * newMin, 0, this.width * newMax, this.height, 5 * this.pixelScale, !0, !0);
                 break;
 
               case "y":
-                this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5, !0, !0);
+                this.canvasContext.roundRect(0, this.height * newMin, this.width, this.height * newMax, 5 * this.pixelScale, !0, !0);
             }
             if (newMin != this.oldDrawModel.min || newMax != this.oldDrawModel.max) {
                 var event = new CustomEvent("gripscroll-update-" + this.direction);
